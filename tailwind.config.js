@@ -1,0 +1,97 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx}",
+    "./app/**/*.{js,jsx}",
+    "./components/**/*.{js,jsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#8B1D2C',
+          container: '#8B1D2C',
+          hover: '#6E1521',
+          fixed: '#ffdada',
+          dim: '#ffb3b4',
+        },
+        'surface-hero': '#15151F',
+        'gold-accent': '#E7B94A',
+        'secondary-fixed': '#ffdf9b',
+        'secondary-container': '#fece5d',
+        'success-green': '#1E9E5A',
+        'info-blue': '#3E6FD9',
+        'text-primary': '#181A1F',
+        'text-secondary': '#6B7280',
+        'border-subtle': '#E7E8EE',
+        'surface-card': '#FFFFFF',
+        'surface-canvas': '#F8F9FD',
+        'surface-container-low': '#F2F3F7',
+        'surface-container': '#EDEEF2',
+        'surface-container-high': '#E7E8EC',
+        'tint-maroon': '#FBEAEA',
+        'tint-blue': '#EAF0FC',
+        'tint-green': '#EAF8EF',
+        'tint-amber': '#FEF9C3',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      fontSize: {
+        'display-stat': ['32px', { lineHeight: '38px', letterSpacing: '-0.02em', fontWeight: '800' }],
+        'display-stat-mobile': ['26px', { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '800' }],
+        'headline-page': ['24px', { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '700' }],
+        'headline-section': ['18px', { lineHeight: '24px', fontWeight: '600' }],
+        'body-default': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        'body-medium': ['14px', { lineHeight: '20px', fontWeight: '500' }],
+        'body-sm': ['12px', { lineHeight: '16px', fontWeight: '400' }],
+        'label-eyebrow': ['11px', { lineHeight: '14px', letterSpacing: '0.06em', fontWeight: '700' }],
+        'label-button': ['13px', { lineHeight: '18px', fontWeight: '600' }],
+        'label-badge': ['12px', { lineHeight: '16px', fontWeight: '600' }],
+      },
+      spacing: {
+        'space-xs': '0.25rem',
+        'space-sm': '0.5rem',
+        'space-md': '1rem',
+        'space-lg': '1.5rem',
+        'space-xl': '2rem',
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+      },
+      animation: {
+        'sheen-sweep': 'sheenSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'aura-pulse': 'auraPulse 4s ease-in-out infinite alternate',
+        'logo-sweep': 'logoSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'sidebar-brand-sweep': 'brandCardSweep 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+      },
+      keyframes: {
+        sheenSweep: {
+          '0%': { transform: 'translateX(-150%) skewX(-20deg)', opacity: '0' },
+          '20%': { opacity: '0.75' },
+          '60%': { opacity: '0.75' },
+          '100%': { transform: 'translateX(250%) skewX(-20deg)', opacity: '0' },
+        },
+        logoSweep: {
+          '0%': { transform: 'translateX(-180%) rotate(25deg)', opacity: '0' },
+          '15%': { opacity: '0.95' },
+          '55%': { opacity: '0.95' },
+          '90%': { transform: 'translateX(250%) rotate(25deg)', opacity: '0' },
+          '100%': { transform: 'translateX(250%) rotate(25deg)', opacity: '0' },
+        },
+        brandCardSweep: {
+          '0%': { transform: 'translateX(-160%) skewX(-22deg)', opacity: '0' },
+          '20%': { opacity: '0.85' },
+          '60%': { opacity: '0.85' },
+          '100%': { transform: 'translateX(260%) skewX(-22deg)', opacity: '0' },
+        },
+        auraPulse: {
+          '0%': { opacity: '0.4', transform: 'scale(0.95)' },
+          '100%': { opacity: '0.8', transform: 'scale(1.05)' },
+        },
+      },
+    },
+  },
+  plugins: [],
+};
