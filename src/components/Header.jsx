@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
+import ProfileMenu from './profile/ProfileMenu';
 
 export default function Header({
   onOpenMobileSidebar,
   searchQuery,
   setSearchQuery,
+  admin,
+  onOpenProfile,
+  onOpenChangePassword,
+  onSignOut,
 }) {
   return (
     <header className="fixed top-0 left-0 md:left-20 lg:left-72 right-0 h-16 bg-white/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-border-subtle/80 transition-all duration-300">
@@ -67,9 +72,7 @@ export default function Header({
       </div>
 
       {/* Profile Capsule on Right */}
-      <div className="backdrop-blur-md bg-white/70 border border-white/60 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05),0_0_0_1px_rgba(255,255,255,0.8)_inset] rounded-2xl px-2.5 sm:px-3 py-1.5 flex items-center gap-2 sm:gap-3 relative overflow-hidden group transition-all duration-300 hover:shadow-md ml-3 shrink-0">
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80 pointer-events-none" />
-
+      <div className="backdrop-blur-md bg-white/70 border border-white/60 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05),0_0_0_1px_rgba(255,255,255,0.8)_inset] rounded-2xl px-2.5 sm:px-3 py-1.5 flex items-center gap-2 sm:gap-3 relative overflow-visible ml-3 shrink-0">
         <button
           onClick={() => alert('No new unread administrative alerts.')}
           className="relative p-1.5 sm:p-2 rounded-xl text-text-secondary hover:bg-white/80 hover:text-primary transition-all duration-200 flex items-center justify-center"
@@ -82,25 +85,12 @@ export default function Header({
 
         <div className="h-5 w-px bg-surface-container-highest/80" />
 
-        <div className="flex items-center gap-2.5 pl-0.5 cursor-pointer group/user">
-          <div className="relative">
-            <img
-              alt="Profile"
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20 group-hover/user:ring-primary/40 transition-all"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJFov-8nCrBTs3RZdR6gNnHPK7-OqoZWkaainCk_EWKXLPDEEfEf9bygbDF3S9aYJ8SHx8bU3-gRahDOd_evx6Hv2jJEihZSIMMILC3smv0WefgvgIJrx5v93zacLG7J_TrJYrFZWKRGyYpjxE3ZyPe9zi5sTpBJk7vSkJ938d2J3lbJBHjC3mUpvfzYyoJICWKWfLuPD4KXEDQJ7ewtQlfUI7JOFLivTiFHSEjqgCEkLhlHPAVqP"
-            />
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-success-green ring-1 ring-white" />
-          </div>
-
-          <div className="hidden sm:flex flex-col text-left">
-            <span className="text-xs font-semibold text-text-primary leading-tight group-hover/user:text-primary transition-colors">
-              Prof. H. S. Bawa
-            </span>
-            <span className="text-[11px] text-text-secondary leading-tight">
-              Dean T&amp;P
-            </span>
-          </div>
-        </div>
+        <ProfileMenu
+          admin={admin}
+          onOpenProfile={onOpenProfile}
+          onOpenChangePassword={onOpenChangePassword}
+          onSignOut={onSignOut}
+        />
       </div>
     </header>
   );

@@ -18,7 +18,7 @@ export default function StudentManagementScreen() {
   const [search, setSearch] = useState('');
 
   const filtered = students.filter((s) => {
-    const matchesFilter = filter === 'all' ? true : s.statusType === filter;
+    const matchesFilter = filter === 'all' ? true : s.status === filter;
     const matchesSearch =
       !search ||
       s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -33,27 +33,27 @@ export default function StudentManagementScreen() {
         <Text style={styles.eyebrow}>MODULE 01 • SCHOLAR VAULT</Text>
         <Text style={styles.title}>Student Management</Text>
         <Text style={styles.subtitle}>
-          Cryptographic academic records and live placement eligibility.
+          Student registration records; no sample student data is loaded.
         </Text>
       </View>
 
       {/* Hero Summary Card */}
       <View style={styles.heroCard}>
         <View style={styles.heroBadge}>
-          <Text style={styles.heroBadgeText}>✓ Active Batch 2024–25</Text>
+          <Text style={styles.heroBadgeText}>Live registration records</Text>
         </View>
         <Text style={styles.heroTitle}>Comprehensive Scholar Directory</Text>
         <Text style={styles.heroDesc}>
-          Cryptographically sealed academic records &amp; multi-tier tracking.
+          Only student records supplied to this directory are shown.
         </Text>
         <View style={styles.metricRow}>
           <View style={styles.metricBox}>
             <Text style={styles.metricLabel}>VERIFICATION</Text>
-            <Text style={styles.metricValue}>94.2%</Text>
+            <Text style={styles.metricValue}>{students.length ? Math.round((students.filter((student) => student.verified).length / students.length) * 100) : '—'}</Text>
           </View>
           <View style={styles.metricBox}>
             <Text style={styles.metricLabel}>ELIGIBLE</Text>
-            <Text style={styles.metricValue}>1,840</Text>
+            <Text style={styles.metricValue}>{students.filter((student) => student.verified).length}</Text>
           </View>
         </View>
       </View>
@@ -69,14 +69,14 @@ export default function StudentManagementScreen() {
 
       {/* Filter Tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar}>
-        {['all', 'in-drive', 'placed', 'unplaced'].map((tab) => (
+        {['all', 'PENDING', 'APPROVED', 'REJECTED', 'REVOKED'].map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setFilter(tab)}
             style={[styles.filterPill, filter === tab && styles.filterPillActive]}
           >
             <Text style={[styles.filterPillText, filter === tab && styles.filterPillTextActive]}>
-              {tab.toUpperCase()}
+              {tab === 'all' ? 'ALL' : tab}
             </Text>
           </TouchableOpacity>
         ))}
@@ -109,6 +109,9 @@ export default function StudentManagementScreen() {
           </View>
         </TouchableOpacity>
       ))}
+      {!filtered.length && (
+        <Text style={styles.sectionTitle}>No student records are available.</Text>
+      )}
 
       {/* Selected Scholar Dossier */}
       {selectedStudent && (

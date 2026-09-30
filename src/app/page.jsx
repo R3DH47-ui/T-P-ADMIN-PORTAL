@@ -1,20 +1,32 @@
 'use client';
 
 import React, { useState } from 'react';
+import AuthGuard, { useAdminAuth } from '../components/auth/AuthGuard';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import StudentManagement from '../views/StudentManagement';
+import OnboardingApprovals from '../views/OnboardingApprovals';
 import CompanyManagement from '../views/CompanyManagement';
 import DriveManagement from '../views/DriveManagement';
 import PlacementStatistics from '../views/PlacementStatistics';
 import TrainingManagement from '../views/TrainingManagement';
 import InternshipMonitoring from '../views/InternshipMonitoring';
 import ReportGeneration from '../views/ReportGeneration';
+import ProfileTab from '../views/ProfileTab';
+import ProfileModal from '../components/profile/ProfileModal';
 
-export default function AdminPortalHome() {
+function AdminPortalDashboard() {
+  const { admin, setAdmin, signOut } = useAdminAuth();
   const [activeModule, setActiveModule] = useState('students');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [profileModalDefaultTab, setProfileModalDefaultTab] = useState('profile');
+
+  const openProfileModal = (tab = 'profile') => {
+    setProfileModalDefaultTab(tab);
+    setProfileModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background font-body-default text-on-surface antialiased">
@@ -26,17 +38,24 @@ export default function AdminPortalHome() {
         setMobileOpen={setMobileSidebarOpen}
       />
 
-      {/* Exact Header Bar */}
+      {/* Dynamic Header Bar with Active Admin Session */}
       <Header
         onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        admin={admin}
+        onOpenProfile={() => openProfileModal('profile')}
+        onOpenChangePassword={() => openProfileModal('password')}
+        onSignOut={signOut}
       />
 
       {/* Main Content Area */}
       <div className="pl-0 md:pl-20 lg:pl-72 transition-all duration-300">
         <main className="relative pt-16 bg-surface min-h-screen">
           <div className="flex flex-col w-full">
+            {activeModule === 'approvals' && (
+              <OnboardingApprovals globalSearch={searchQuery} />
+            )}
             {activeModule === 'students' && (
               <StudentManagement globalSearch={searchQuery} />
             )}
@@ -58,9 +77,34 @@ export default function AdminPortalHome() {
             {activeModule === 'reports' && (
               <ReportGeneration globalSearch={searchQuery} />
             )}
+            {activeModule === 'profile' && (
+              <ProfileTab
+                admin={admin}
+                onAdminUpdated={setAdmin}
+                onSignOut={signOut}
+              />
+            )}
           </div>
         </main>
       </div>
+
+      {/* Profile & Security Modal */}
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        admin={admin}
+        onAdminUpdated={setAdmin}
+        onSignOut={signOut}
+        defaultTab={profileModalDefaultTab}
+      />
     </div>
+  );
+}
+
+export default function AdminPortalHome() {
+  return (
+    <AuthGuard>
+      <AdminPortalDashboard />
+    </AuthGuard>
   );
 }

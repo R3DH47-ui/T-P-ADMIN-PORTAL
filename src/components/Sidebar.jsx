@@ -11,6 +11,13 @@ export default function Sidebar({
 }) {
   const navItems = [
     {
+      id: 'approvals',
+      label: 'Onboarding Approvals',
+      icon: 'how_to_reg',
+      iconBg: 'bg-amber-500/15',
+      iconColor: 'text-amber-700',
+    },
+    {
       id: 'students',
       label: 'Student Management',
       icon: 'school',

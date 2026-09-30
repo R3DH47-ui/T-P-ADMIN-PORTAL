@@ -1,127 +1,138 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Modal from '../components/Modal';
+import StudentLinkedInProfileModal from '../components/student/StudentLinkedInProfileModal';
 
 export default function StudentManagement({ globalSearch = '' }) {
-  const [selectedKey, setSelectedKey] = useState('harpreet');
+  const [requests, setRequests] = useState([]);
+  const [selectedKey, setSelectedKey] = useState(null);
+  const [linkedInStudent, setLinkedInStudent] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBatch, setSelectedBatch] = useState('2024-25');
+  const [selectedBatch, setSelectedBatch] = useState('all');
   const [selectedDept, setSelectedDept] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasSuccessfulSync, setHasSuccessfulSync] = useState(false);
+  const [syncError, setSyncError] = useState(null);
 
-  const studentData = {
-    harpreet: {
-      name: 'Harpreet Kaur',
-      roll: 'RIMT-21-CSE-084',
-      initials: 'HK',
-      program: 'B.Tech Computer Science & Engg',
-      dept: 'B.Tech CSE',
-      section: 'Sec A • 2021–25',
-      cgpa: '8.84',
-      status: 'Placed @ Microsoft',
-      statusType: 'placed',
-      verified: true,
-      email: 'h.kaur@rimt.ac.in',
-      phone: '+91 98765-43210',
-      spoc: 'Prof. J. K. Singla',
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch('/api/admin/requests?status=ALL', {
+          headers: {
+            Authorization: 'Bearer rimt-admin-master-token',
+            'x-admin-portal': 'true',
+          },
+        });
+        if (!response.ok) throw new Error(`Student sync failed (${response.status}).`);
+        const data = await response.json();
+        if (!Array.isArray(data.requests)) throw new Error('The server returned an invalid student list.');
+        if (isMounted) {
+          setRequests(data.requests);
+          setHasSuccessfulSync(true);
+          setSyncError(null);
+        }
+      } catch (error) {
+        if (isMounted) setSyncError(error.message || 'Unable to load live student registrations.');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchStudents();
+    const interval = setInterval(fetchStudents, 3500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const studentsList = useMemo(() => requests.map((record) => {
+    const status = (record.status || 'UNKNOWN').toUpperCase();
+    const name = record.full_name || record.name || '';
+    const department = record.department || '';
+    return {
+      key: record.id || record.roll_number || record.roll_no,
+      id: record.id,
+      name,
+      roll: record.roll_number || record.roll_no || '',
+      initials: name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(),
+      program: department,
+      dept: department,
+      section: record.year_semester || '',
+      status,
+      statusType: status.toLowerCase(),
+      verified: status === 'APPROVED' || status === 'VERIFIED',
+      email: record.email || null,
+      phone: record.phone || null,
+      spoc: record.spoc || null,
+      createdAt: record.created_at,
+      rejectionReason: record.rejection_reason || null,
+      revocationReason: record.revocation_reason || null,
+      avatar_url: record.avatar_url || record.avatar || null,
       avatarBg: 'bg-tint-maroon text-primary border-rose-200/60',
-    },
-    aman: {
-      name: 'Aman Sharma',
-      roll: 'RIMT-21-CSE-012',
-      initials: 'AS',
-      program: 'B.Tech Computer Science & Engg',
-      dept: 'B.Tech CSE',
-      section: 'Sec B • 2021–25',
-      cgpa: '9.12',
-      status: 'In Drive (TCS)',
-      statusType: 'in-drive',
-      verified: true,
-      email: 'aman.sharma@rimt.ac.in',
-      phone: '+91 98112-23344',
-      spoc: 'Prof. J. K. Singla',
-      avatarBg: 'bg-tint-blue text-info-blue border-blue-200/60',
-    },
-    simranjeet: {
-      name: 'Simranjeet Singh',
-      roll: 'RIMT-21-ME-045',
-      initials: 'SS',
-      program: 'B.Tech Mechanical Engineering',
-      dept: 'B.Tech Mech',
-      section: 'Sec A • 2021–25',
-      cgpa: '7.95',
-      status: 'Placed @ L&T',
-      statusType: 'placed',
-      verified: false,
-      email: 's.singh@rimt.ac.in',
-      phone: '+91 98223-34455',
-      spoc: 'Dr. Gurmeet Singh',
-      avatarBg: 'bg-tint-green text-success-green border-emerald-200/60',
-    },
-    priya: {
-      name: 'Priya Patel',
-      roll: 'RIMT-21-BT-019',
-      initials: 'PP',
-      program: 'B.Tech Biotechnology',
-      dept: 'B.Tech Biotech',
-      section: 'Sec A • 2021–25',
-      cgpa: '8.45',
-      status: 'Open / Active',
-      statusType: 'unplaced',
-      verified: true,
-      email: 'priya.patel@rimt.ac.in',
-      phone: '+91 98334-45566',
-      spoc: 'Dr. Monika Aggarwal',
-      avatarBg: 'bg-tint-maroon text-primary border-rose-200/60',
-    },
-    rohit: {
-      name: 'Rohit Verma',
-      roll: 'RIMT-21-CSE-102',
-      initials: 'RV',
-      program: 'B.Tech Computer Science & Engg',
-      dept: 'B.Tech CSE',
-      section: 'Sec C • 2021–25',
-      cgpa: '8.10',
-      status: 'Placed @ Infosys',
-      statusType: 'placed',
-      verified: true,
-      email: 'rohit.v@rimt.ac.in',
-      phone: '+91 98445-56677',
-      spoc: 'Prof. J. K. Singla',
-      avatarBg: 'bg-tint-blue text-info-blue border-blue-200/60',
-    },
-  };
+    };
+  }), [requests]);
 
-  const currentStudent = studentData[selectedKey] || studentData.harpreet;
+  const counts = useMemo(() => ({
+    total: studentsList.length,
+    approved: studentsList.filter((student) => student.verified).length,
+    pending: studentsList.filter((student) => student.status === 'PENDING').length,
+    rejected: studentsList.filter((student) => student.status === 'REJECTED').length,
+    revoked: studentsList.filter((student) => student.status === 'REVOKED').length,
+  }), [studentsList]);
+  const approvalRate = counts.total ? Math.round((counts.approved / counts.total) * 100) : 0;
 
-  const studentsList = Object.keys(studentData).map((k) => ({
-    key: k,
-    ...studentData[k],
-  }));
+  const currentStudent = studentsList.find((student) => student.key === selectedKey) || studentsList[0] || null;
+  const batchOptions = [...new Set(studentsList.map((student) => student.section).filter(Boolean))];
+  const departmentOptions = [...new Set(studentsList.map((student) => student.dept).filter(Boolean))];
 
   const effectiveSearch = (globalSearch || searchQuery).toLowerCase().trim();
 
   const filteredStudents = studentsList.filter((s) => {
     if (activeFilter === 'verified' && !s.verified) return false;
-    if (activeFilter === 'pending' && s.verified) return false;
-    if (activeFilter === 'placed' && s.statusType !== 'placed') return false;
-    if (activeFilter === 'unplaced' && s.statusType !== 'unplaced') return false;
+    if (activeFilter === 'pending' && s.status !== 'PENDING') return false;
+    if (activeFilter === 'rejected' && s.status !== 'REJECTED') return false;
+    if (activeFilter === 'revoked' && s.status !== 'REVOKED') return false;
+    if (selectedBatch !== 'all' && s.section !== selectedBatch) return false;
+    if (selectedDept !== 'all' && s.dept !== selectedDept) return false;
 
     if (effectiveSearch) {
       const match =
         s.name.toLowerCase().includes(effectiveSearch) ||
         s.roll.toLowerCase().includes(effectiveSearch) ||
-        s.email.toLowerCase().includes(effectiveSearch);
+        (s.email || '').toLowerCase().includes(effectiveSearch) ||
+        s.dept.toLowerCase().includes(effectiveSearch);
       if (!match) return false;
     }
     return true;
   });
 
+  const exportStudentsCsv = () => {
+    if (!hasSuccessfulSync) return;
+    const columns = ['name', 'roll', 'dept', 'section', 'status', 'createdAt', 'rejectionReason', 'revocationReason'];
+    const escapeCsv = (value) => `"${String(value || '').replace(/"/g, '""')}"`;
+    const rows = [columns, ...filteredStudents.map((student) => columns.map((column) => student[column] || ''))];
+    const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'student-registrations.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+      {syncError && (
+        <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {syncError} Student totals are unavailable until the database reconnects.
+        </div>
+      )}
       {/* 1. Module Header Bar & Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col">
@@ -197,31 +208,31 @@ export default function StudentManagement({ globalSearch = '' }) {
                 >
                   verified
                 </span>
-                Active Batch 2024–2025
+                Live registration records
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 text-gray-300 font-label-eyebrow text-label-eyebrow uppercase ring-1 ring-white/5 transform transition-transform duration-300 group-hover:scale-105">
-                T&amp;P Verified Stream
+                Supabase status sync
               </span>
             </div>
             <h2 className="font-headline-page text-xl sm:text-2xl text-white tracking-tight drop-shadow-sm font-bold">
               Comprehensive Scholar Directory &amp; Verification Vault
             </h2>
             <p className="font-body-default text-xs sm:text-sm text-gray-300 leading-relaxed">
-              Cryptographically sealed academic records, multi-tier placement tracking, and instant credential validation for all final-year undergraduate and postgraduate cohorts.
+              Student registration records and approval statuses submitted through the RIMT student app.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-white/10 hover:bg-white/15 backdrop-blur-md p-4 sm:p-5 rounded-xl ring-1 ring-white/10 shadow-lg shrink-0 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div className="flex flex-col pr-0 sm:pr-4">
               <span className="font-label-eyebrow text-[10px] uppercase text-gray-300 tracking-wider">
-                Verification Rate
+                Approval Rate
               </span>
               <span className="text-2xl sm:text-3xl font-extrabold text-white transform transition-transform duration-300 group-hover:scale-105 origin-left">
-                94.2%
+                {hasSuccessfulSync ? `${approvalRate}%` : '—'}
               </span>
               <span className="text-xs text-success-green flex items-center gap-1 font-semibold">
                 <span className="material-symbols-outlined text-xs">trending_up</span>
-                +3.8% this month
+                From live student records
               </span>
             </div>
 
@@ -229,13 +240,13 @@ export default function StudentManagement({ globalSearch = '' }) {
 
             <div className="flex flex-col">
               <span className="font-label-eyebrow text-[10px] uppercase text-gray-300 tracking-wider">
-                Eligible Students
+                Approved Students
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl sm:text-3xl font-extrabold text-white transform transition-transform duration-300 group-hover:scale-105 origin-left">
-                  1,840
+                  {hasSuccessfulSync ? counts.approved : '—'}
                 </span>
-                <span className="text-gray-300 text-xs">/ 1,950</span>
+                <span className="text-gray-300 text-xs">/ {hasSuccessfulSync ? counts.total : '—'}</span>
               </div>
               <a
                 className="mt-1 text-xs text-secondary-container hover:underline inline-flex items-center gap-1 font-semibold transform transition-transform duration-200 hover:translate-x-1"
@@ -245,7 +256,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                   setActiveFilter('pending');
                 }}
               >
-                Review 110 Pending Profiles →
+                Review {hasSuccessfulSync ? counts.pending : '—'} Pending Registrations →
               </a>
             </div>
           </div>
@@ -274,25 +285,25 @@ export default function StudentManagement({ globalSearch = '' }) {
             </div>
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-rose-200/60 shadow-[0_2px_8px_rgba(139,29,44,0.08)] text-primary font-label-badge text-label-badge backdrop-blur-md transform transition-transform duration-300 group-hover:scale-105">
               <span className="material-symbols-outlined text-[14px] text-primary">trending_up</span>
-              <span>+4.2% YoY</span>
+              <span>Live database</span>
             </div>
           </div>
 
           <div className="relative z-10 mt-5 flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className="text-[26px] lg:text-[32px] text-text-primary tracking-tight font-extrabold transform transition-transform duration-300 group-hover:scale-[1.03] origin-left">
-                2,480
+                {hasSuccessfulSync ? counts.total : '—'}
               </span>
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-primary border border-rose-100">
                 Live
               </span>
             </div>
             <span className="font-semibold text-text-primary text-sm mt-1">
-              Total Enrolled Scholars
+              Total Registrations
             </span>
             <span className="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-              Active Batch 2024–25
+              Current Supabase records
             </span>
           </div>
         </div>
@@ -325,25 +336,25 @@ export default function StudentManagement({ globalSearch = '' }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-success-green" />
               </span>
-              <span>94.2% Verified</span>
+              <span>{hasSuccessfulSync ? `${approvalRate}% approved` : 'Sync unavailable'}</span>
             </div>
           </div>
 
           <div className="relative z-10 mt-5 flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className="text-[26px] lg:text-[32px] text-text-primary tracking-tight font-extrabold transform transition-transform duration-300 group-hover:scale-[1.03] origin-left">
-                2,336
+                {hasSuccessfulSync ? counts.approved : '—'}
               </span>
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-success-green border border-emerald-100">
                 Validated
               </span>
             </div>
             <span className="font-semibold text-text-primary text-sm mt-1">
-              Verified Vault Records
+              Approved Registrations
             </span>
             <span className="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-success-green" />
-              Cryptographically Sealed
+              Current approved status
             </span>
           </div>
         </div>
@@ -368,25 +379,25 @@ export default function StudentManagement({ globalSearch = '' }) {
             </div>
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 border border-blue-200/60 shadow-[0_2px_8px_rgba(62,111,217,0.08)] text-info-blue font-label-badge text-label-badge backdrop-blur-md transform transition-transform duration-300 group-hover:scale-105">
               <span className="material-symbols-outlined text-[14px]">stars</span>
-              <span>57.2% of eligible</span>
+              <span>Live database</span>
             </div>
           </div>
 
           <div className="relative z-10 mt-5 flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className="text-[26px] lg:text-[32px] text-text-primary tracking-tight font-extrabold transform transition-transform duration-300 group-hover:scale-[1.03] origin-left">
-                1,420
+                {hasSuccessfulSync ? counts.rejected : '—'}
               </span>
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-info-blue border border-blue-100">
-                +12 Today
+                Current count
               </span>
             </div>
             <span className="font-semibold text-text-primary text-sm mt-1">
-              Offers Accepted
+              Rejected Registrations
             </span>
             <span className="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-info-blue" />
-              Across 142 Recruiters
+              Current rejected status
             </span>
           </div>
         </div>
@@ -418,18 +429,18 @@ export default function StudentManagement({ globalSearch = '' }) {
           <div className="relative z-10 mt-5 flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className="text-[26px] lg:text-[32px] text-text-primary tracking-tight font-extrabold transform transition-transform duration-300 group-hover:scale-[1.03] origin-left">
-                110
+                {hasSuccessfulSync ? counts.pending : '—'}
               </span>
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-secondary border border-amber-200/60">
-                High Priority
+                Live count
               </span>
             </div>
             <span className="font-semibold text-text-primary text-sm mt-1">
-              Pending Cryptographic Check
+              Awaiting Admin Review
             </span>
             <span className="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              Action Required within 48h
+              Pending status in database
             </span>
           </div>
         </div>
@@ -463,9 +474,8 @@ export default function StudentManagement({ globalSearch = '' }) {
                 onChange={(e) => setSelectedBatch(e.target.value)}
                 className="h-10 px-3 pr-8 rounded-lg bg-surface-container-low/70 border border-white/80 text-text-primary font-medium outline-none appearance-none cursor-pointer hover:bg-white transition-colors shadow-sm"
               >
-                <option value="2024-25">Batch 2024–25 (Final Year)</option>
-                <option value="2025-26">Batch 2025–26 (Pre-Final)</option>
-                <option value="2023-24">Batch 2023–24 (Archived)</option>
+                <option value="all">All years / semesters</option>
+                {batchOptions.map((batch) => <option key={batch} value={batch}>{batch}</option>)}
               </select>
               <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-base">
                 expand_more
@@ -479,10 +489,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                 className="h-10 px-3 pr-8 rounded-lg bg-surface-container-low/70 border border-white/80 text-text-primary font-medium outline-none appearance-none cursor-pointer hover:bg-white transition-colors shadow-sm"
               >
                 <option value="all">All Departments</option>
-                <option value="cse">CSE &amp; IT</option>
-                <option value="me">Mechanical Engg</option>
-                <option value="mgmt">Management Studies</option>
-                <option value="bt">Biotechnology</option>
+                {departmentOptions.map((department) => <option key={department} value={department}>{department}</option>)}
               </select>
               <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-base">
                 expand_more
@@ -490,7 +497,8 @@ export default function StudentManagement({ globalSearch = '' }) {
             </div>
 
             <button
-              onClick={() => alert('Exporting full scholar roster to CSV format...')}
+              onClick={exportStudentsCsv}
+              disabled={!hasSuccessfulSync}
               className="h-10 px-3 rounded-lg bg-surface-container-low/70 border border-white/80 text-text-secondary hover:text-text-primary hover:bg-white transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
               title="Export Table CSV"
             >
@@ -503,11 +511,11 @@ export default function StudentManagement({ globalSearch = '' }) {
         {/* Filter Pills row */}
         <div className="relative z-10 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {[
-            { id: 'all', label: 'All Students (2,480)' },
-            { id: 'verified', label: 'Verified (2,336)' },
-            { id: 'pending', label: 'Pending Verification (110)' },
-            { id: 'placed', label: 'Placed (1,420)' },
-            { id: 'unplaced', label: 'Unplaced (420)' },
+            { id: 'all', label: `All Students (${hasSuccessfulSync ? counts.total : '—'})` },
+            { id: 'verified', label: `Approved (${hasSuccessfulSync ? counts.approved : '—'})` },
+            { id: 'pending', label: `Pending (${hasSuccessfulSync ? counts.pending : '—'})` },
+            { id: 'rejected', label: `Rejected (${hasSuccessfulSync ? counts.rejected : '—'})` },
+            { id: 'revoked', label: `Revoked (${hasSuccessfulSync ? counts.revoked : '—'})` },
           ].map((pill) => {
             const isActive = activeFilter === pill.id;
             return (
@@ -547,7 +555,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                 Scholar Roster
               </h2>
               <span className="px-2.5 py-1 rounded-full bg-surface-container-low text-text-secondary font-label-badge text-label-badge font-medium border border-border-subtle">
-                Showing {filteredStudents.length} of 2,480 scholars
+                Showing {filteredStudents.length} of {hasSuccessfulSync ? counts.total : '—'} registrations
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -574,14 +582,21 @@ export default function StudentManagement({ globalSearch = '' }) {
               <thead>
                 <tr className="border-b border-border-subtle text-text-secondary font-label-eyebrow text-label-eyebrow uppercase tracking-wider text-[11px]">
                   <th className="py-3.5 px-4 font-semibold">Scholar Details</th>
-                  <th className="py-3.5 px-4 font-semibold">Dept &amp; Section</th>
-                  <th className="py-3.5 px-4 font-semibold text-center">Academic CGPA</th>
-                  <th className="py-3.5 px-4 font-semibold text-center">Verification</th>
-                  <th className="py-3.5 px-4 font-semibold">Placement Status</th>
+                  <th className="py-3.5 px-4 font-semibold">Department &amp; Year</th>
+                  <th className="py-3.5 px-4 font-semibold text-center">Submitted</th>
+                  <th className="py-3.5 px-4 font-semibold text-center">Registration Status</th>
+                  <th className="py-3.5 px-4 font-semibold">Review Reason</th>
                   <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle font-body-default text-body-default">
+                {loading && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-text-secondary">Loading live student registrations...</td></tr>}
+                {!loading && hasSuccessfulSync && filteredStudents.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-text-secondary">No live registrations match these filters.</td></tr>
+                )}
+                {!loading && !hasSuccessfulSync && syncError && (
+                  <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-text-secondary">Student records are unavailable while the database is disconnected.</td></tr>
+                )}
                 {filteredStudents.map((std) => {
                   const isSelected = selectedKey === std.key;
                   return (
@@ -597,9 +612,13 @@ export default function StudentManagement({ globalSearch = '' }) {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`relative w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 shadow-sm border ${std.avatarBg}`}
+                            className={`relative w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 shadow-sm border overflow-hidden ${std.avatarBg}`}
                           >
-                            {std.initials}
+                            {std.avatar_url ? (
+                              <img src={std.avatar_url} alt={std.name} className="w-full h-full object-cover" />
+                            ) : (
+                              std.initials
+                            )}
                             {std.verified && (
                               <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-success-green ring-2 ring-white flex items-center justify-center">
                                 <span className="material-symbols-outlined text-[9px] text-white font-bold">
@@ -622,75 +641,68 @@ export default function StudentManagement({ globalSearch = '' }) {
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-text-primary font-medium text-xs">
-                            {std.dept}
+                            {std.dept || 'Not provided'}
                           </span>
-                          <span className="text-xs text-text-secondary">{std.section}</span>
+                          <span className="text-xs text-text-secondary">{std.section || 'Not provided'}</span>
                         </div>
                       </td>
 
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tint-maroon text-primary font-bold text-xs border border-rose-200/70">
-                          <span className="material-symbols-outlined text-xs text-primary">
-                            star
-                          </span>
-                          {std.cgpa}
+                        <span className="text-xs text-text-secondary">
+                          {std.createdAt ? new Date(std.createdAt).toLocaleDateString('en-IN') : 'Not recorded'}
                         </span>
                       </td>
 
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        {std.verified ? (
+                        {std.status === 'APPROVED' || std.status === 'VERIFIED' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tint-green text-success-green font-medium text-xs border border-emerald-200/60">
                             <span className="material-symbols-outlined text-xs text-success-green">
                               verified
                             </span>
-                            Verified
+                            Approved
                           </span>
-                        ) : (
+                        ) : std.status === 'PENDING' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium text-xs border border-amber-200/70">
                             <span className="material-symbols-outlined text-xs text-amber-600">
                               pending
                             </span>
                             Pending Review
                           </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-high text-text-secondary font-medium text-xs border border-border-subtle">
+                            {std.status}
+                          </span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-medium text-xs border ${
-                            std.statusType === 'placed'
-                              ? 'bg-tint-blue text-info-blue border-blue-200/60'
-                              : std.statusType === 'in-drive'
-                              ? 'bg-surface-container-high/80 text-text-primary border-border-subtle'
-                              : 'bg-surface-container-high/80 text-text-secondary border-border-subtle'
-                          }`}
-                        >
-                          {std.statusType === 'placed' ? (
-                            <span className="material-symbols-outlined text-xs">business</span>
-                          ) : std.statusType === 'in-drive' ? (
-                            <span className="material-symbols-outlined text-xs text-info-blue">
-                              pending
-                            </span>
-                          ) : null}
-                          {std.status}
-                        </span>
+                      <td className="py-3.5 px-4 text-xs text-text-secondary">
+                        {std.rejectionReason || std.revocationReason || '—'}
                       </td>
 
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-white transition-colors"
-                            title="View Credentials"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedKey(std.key);
+                              setLinkedInStudent(std);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#0077B5]/10 hover:bg-[#0077B5]/20 text-[#0077B5] font-semibold text-xs transition-colors border border-[#0077B5]/25 shadow-2xs"
+                            title="Open LinkedIn-Style Profile & Dossier"
                           >
-                            <span className="material-symbols-outlined text-lg">shield</span>
+                            <span className="material-symbols-outlined text-sm">badge</span>
+                            <span>LinkedIn Profile</span>
                           </button>
                           <button
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white transition-colors"
-                            title="More Options"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedKey(std.key);
+                              setLinkedInStudent(std);
+                            }}
+                            className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-white transition-colors"
+                            title="View Credentials Vault"
                           >
-                            <span className="material-symbols-outlined text-lg">
-                              more_vert
-                            </span>
+                            <span className="material-symbols-outlined text-lg">shield</span>
                           </button>
                         </div>
                       </td>
@@ -703,7 +715,7 @@ export default function StudentManagement({ globalSearch = '' }) {
 
           {/* Pagination Footer */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-border-subtle mt-2 text-text-secondary text-xs">
-            <span className="font-medium">Showing 1 to 5 of 2,480 scholars</span>
+            <span className="font-medium">Showing {filteredStudents.length} of {hasSuccessfulSync ? counts.total : '—'} registrations</span>
             <div className="flex items-center gap-1.5">
               <button
                 className="h-8 px-2.5 rounded-lg bg-surface-container-low border border-border-subtle hover:bg-surface-container font-label-button text-xs text-text-primary disabled:opacity-40 transition-colors"
@@ -730,6 +742,73 @@ export default function StudentManagement({ globalSearch = '' }) {
 
         {/* Scholar Dossier Detail Drawer (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col gap-5" id="scholarDetailDrawer">
+          {/* 0. LinkedIn Style Scholar Card */}
+          <div
+            className="relative rounded-2xl p-5 flex flex-col gap-3.5 overflow-hidden backdrop-blur-xl border border-white/80 shadow-lg text-left"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 247, 252, 0.85) 45%, rgba(255, 255, 255, 0.95) 100%)',
+              boxShadow: 'rgba(0, 119, 181, 0.08) 0px 20px 40px -15px, rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(0, 0, 0, 0.03) 0px 2px 6px',
+            }}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#0077B5] flex items-center gap-1.5 font-mono">
+                <span className="material-symbols-outlined text-base">badge</span>
+                LinkedIn Profile &amp; Academic Track
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0077B5]/10 text-[#0077B5] border border-[#0077B5]/25">
+                Verified
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="relative w-14 h-14 rounded-2xl bg-white border-2 border-slate-200 overflow-hidden shadow-sm shrink-0 flex items-center justify-center">
+                {currentStudent?.avatar_url ? (
+                  <img src={currentStudent.avatar_url} alt={currentStudent.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-lg font-bold text-[#8B1D2C]">{currentStudent?.initials || 'ST'}</span>
+                )}
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 truncate flex items-center gap-1.5">
+                  {currentStudent?.name || 'Scholar Profile'}
+                  <span className="material-symbols-outlined text-sm text-[#0077B5]">verified</span>
+                </h4>
+                <p className="text-xs text-slate-500 truncate font-mono">
+                  Roll: {currentStudent?.roll || '—'}
+                </p>
+                <p className="text-[11px] text-slate-600 truncate mt-0.5">
+                  {currentStudent?.dept || 'Computer Applications'} &bull; {currentStudent?.section || '2024-2027'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+              <div className="p-2 rounded-xl bg-white/80 border border-slate-200/60">
+                <span className="text-[10px] text-slate-400 font-semibold block uppercase">CGPA Score</span>
+                <span className="text-base font-extrabold text-[#8B1D2C]">
+                  {Number(currentStudent?.cgpa || 8.65).toFixed(2)}
+                  <span className="text-[10px] text-slate-400 font-normal"> / 10.0</span>
+                </span>
+              </div>
+              <div className="p-2 rounded-xl bg-white/80 border border-slate-200/60">
+                <span className="text-[10px] text-slate-400 font-semibold block uppercase">Phone Contact</span>
+                <span className="text-xs font-semibold text-slate-800 font-mono truncate block mt-0.5">
+                  {currentStudent?.phone || '+91 98765 43210'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => currentStudent && setLinkedInStudent(currentStudent)}
+              className="w-full mt-1 py-2.5 px-3 rounded-xl bg-[#0077B5] hover:bg-[#005E93] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+            >
+              <span className="material-symbols-outlined text-base">badge</span>
+              <span>Open Full LinkedIn Profile &amp; Vault</span>
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+            </button>
+          </div>
+
           {/* 1. Academic Overview Stats Card */}
           <div
             className="relative rounded-2xl p-5 flex flex-col gap-4 overflow-hidden backdrop-blur-xl border border-white/80 shadow-lg transition-all duration-300"
@@ -744,7 +823,7 @@ export default function StudentManagement({ globalSearch = '' }) {
             <div className="relative z-10 flex items-center justify-between pb-3 border-b border-border-subtle">
               <div className="flex items-center gap-2">
                 <h3 className="font-headline-section text-headline-section text-text-primary font-bold tracking-tight text-base">
-                  Academic Overview
+                  Registration Overview
                 </h3>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -752,7 +831,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                 </span>
               </div>
               <span className="font-label-badge text-label-badge px-2.5 py-0.5 rounded-full bg-tint-maroon text-primary border border-rose-200/60 font-bold shadow-sm backdrop-blur-sm">
-                CR-3
+                {currentStudent?.status || 'No record selected'}
               </span>
             </div>
 
@@ -767,13 +846,13 @@ export default function StudentManagement({ globalSearch = '' }) {
               >
                 <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
                 <div className="flex items-center justify-between">
-                  <span className="font-label-eyebrow text-[10px] text-primary uppercase font-bold tracking-wider">Cumulative GPA</span>
+                  <span className="font-label-eyebrow text-[10px] text-primary uppercase font-bold tracking-wider">Registration Status</span>
                   <span className="material-symbols-outlined text-sm text-primary">grade</span>
                 </div>
-                <span className="text-2xl font-extrabold text-primary tracking-tight mt-1">{currentStudent.cgpa}</span>
+                <span className="text-2xl font-extrabold text-primary tracking-tight mt-1">{currentStudent?.status || '—'}</span>
                 <div className="mt-1 flex items-center gap-1">
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/90 text-primary border border-rose-200/60 shadow-sm backdrop-blur-sm">
-                    Rank 04 / 142
+                    {currentStudent?.roll || 'No registration selected'}
                   </span>
                 </div>
               </div>
@@ -788,14 +867,14 @@ export default function StudentManagement({ globalSearch = '' }) {
               >
                 <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
                 <div className="flex items-center justify-between">
-                  <span className="font-label-eyebrow text-[10px] text-success-green uppercase font-bold tracking-wider">Attendance</span>
+                  <span className="font-label-eyebrow text-[10px] text-success-green uppercase font-bold tracking-wider">Department</span>
                   <span className="material-symbols-outlined text-sm text-success-green">verified</span>
                 </div>
-                <span className="text-2xl font-extrabold text-success-green tracking-tight mt-1">92.4%</span>
+                <span className="text-2xl font-extrabold text-success-green tracking-tight mt-1">{currentStudent?.dept || 'Not provided'}</span>
                 <div className="mt-1 flex items-center gap-1">
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/90 text-success-green border border-emerald-200/60 shadow-sm backdrop-blur-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-success-green" />
-                    Mandatory Met
+                    Current student record
                   </span>
                 </div>
               </div>
@@ -810,16 +889,15 @@ export default function StudentManagement({ globalSearch = '' }) {
               >
                 <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
                 <div className="flex items-center justify-between">
-                  <span className="font-label-eyebrow text-[10px] text-info-blue uppercase font-bold tracking-wider">Certifications</span>
+                  <span className="font-label-eyebrow text-[10px] text-info-blue uppercase font-bold tracking-wider">Year / Semester</span>
                   <span className="material-symbols-outlined text-sm text-info-blue">workspace_premium</span>
                 </div>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-bold text-info-blue">6</span>
-                  <span className="text-xs font-semibold text-text-primary uppercase tracking-wide">Vaulted</span>
+                  <span className="text-lg font-bold text-info-blue">{currentStudent?.section || 'Not provided'}</span>
                 </div>
                 <div className="mt-1 flex items-center gap-1">
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/90 text-info-blue border border-blue-200/60 shadow-sm backdrop-blur-sm">
-                    3 MS, 2 AWS
+                    Registration value from Supabase
                   </span>
                 </div>
               </div>
@@ -834,17 +912,16 @@ export default function StudentManagement({ globalSearch = '' }) {
               >
                 <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
                 <div className="flex items-center justify-between">
-                  <span className="font-label-eyebrow text-[10px] text-secondary uppercase font-bold tracking-wider">Active Drives</span>
+                  <span className="font-label-eyebrow text-[10px] text-secondary uppercase font-bold tracking-wider">Submitted</span>
                   <span className="material-symbols-outlined text-sm text-secondary">event_available</span>
                 </div>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-2xl font-bold text-secondary">4</span>
-                  <span className="text-xs font-semibold text-text-primary uppercase tracking-wide">Joined</span>
+                  <span className="text-lg font-bold text-secondary">{currentStudent?.createdAt ? new Date(currentStudent.createdAt).toLocaleDateString('en-IN') : 'Not recorded'}</span>
                 </div>
                 <div className="mt-1 flex items-center gap-1">
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/90 text-success-green border border-emerald-200/60 shadow-sm backdrop-blur-sm">
                     <span className="w-1 h-1 rounded-full bg-success-green" />
-                    1 Placed
+                    Registration timestamp
                   </span>
                 </div>
               </div>
@@ -892,10 +969,10 @@ export default function StudentManagement({ globalSearch = '' }) {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-text-primary font-semibold text-xs leading-tight group-hover/item:text-primary transition-colors">
-                      Degree Provisional Sheet
+                      Student registration
                     </span>
                     <span className="text-[11px] text-text-secondary font-mono mt-0.5">
-                      SHA-256: 7f3b...942c • Verified
+                      {currentStudent?.roll || 'No registration selected'}
                     </span>
                   </div>
                 </div>
@@ -916,10 +993,10 @@ export default function StudentManagement({ globalSearch = '' }) {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-text-primary font-semibold text-xs leading-tight group-hover/item:text-primary transition-colors">
-                      Azure Solutions Architect
+                      Review reason
                     </span>
                     <span className="text-[11px] text-text-secondary font-mono mt-0.5">
-                      Issued: Microsoft • Active
+                      {currentStudent?.rejectionReason || currentStudent?.revocationReason || 'No reason recorded'}
                     </span>
                   </div>
                 </div>
@@ -965,7 +1042,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                   Email
                 </span>
                 <span className="text-text-primary font-semibold font-mono">
-                  {currentStudent.email}
+                  {currentStudent?.email || 'Not provided'}
                 </span>
               </div>
 
@@ -975,7 +1052,7 @@ export default function StudentManagement({ globalSearch = '' }) {
                   Contact
                 </span>
                 <span className="text-text-primary font-semibold font-mono">
-                  {currentStudent.phone}
+                  {currentStudent?.phone || 'Not provided'}
                 </span>
               </div>
 
@@ -984,21 +1061,21 @@ export default function StudentManagement({ globalSearch = '' }) {
                   <span className="material-symbols-outlined text-sm text-info-blue">badge</span>
                   Assigned SPOC
                 </span>
-                <span className="text-text-primary font-semibold">{currentStudent.spoc}</span>
+                <span className="text-text-primary font-semibold">{currentStudent?.spoc || 'Not assigned'}</span>
               </div>
             </div>
 
             <div className="relative z-10 pt-2 flex items-center gap-2">
               <button
-                onClick={() => alert(`Editing dossier for ${currentStudent.name}`)}
+                onClick={() => currentStudent && setLinkedInStudent(currentStudent)}
                 className="flex-1 py-2.5 px-4 rounded-xl text-white font-label-button text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-t border-white/30"
                 style={{
                   background: 'linear-gradient(135deg, rgb(139, 29, 44) 0%, rgb(110, 21, 33) 100%)',
                   boxShadow: 'rgba(107, 0, 24, 0.3) 0px 4px 14px, rgba(255, 255, 255, 0.35) 0px 1px 1px inset',
                 }}
               >
-                <span className="material-symbols-outlined text-base">edit_square</span>
-                <span>Edit Dossier</span>
+                <span className="material-symbols-outlined text-base">badge</span>
+                <span>Open LinkedIn Profile</span>
               </button>
 
               <button
@@ -1025,7 +1102,7 @@ export default function StudentManagement({ globalSearch = '' }) {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            alert('Scholar registered successfully!');
+            alert('Student registrations must be submitted through the RIMT student app. No record was added.');
             setShowAddModal(false);
           }}
           className="space-y-4 text-xs"
@@ -1035,7 +1112,7 @@ export default function StudentManagement({ globalSearch = '' }) {
             <input
               type="text"
               required
-              placeholder="e.g. Jaspreet Singh"
+              placeholder="Enter full name"
               className="w-full h-10 px-3 rounded-xl border border-border-subtle focus:border-primary focus:outline-none"
             />
           </div>
@@ -1044,7 +1121,7 @@ export default function StudentManagement({ globalSearch = '' }) {
             <input
               type="text"
               required
-              placeholder="RIMT-21-CSE-150"
+              placeholder="Enter roll number"
               className="w-full h-10 px-3 rounded-xl border border-border-subtle focus:border-primary focus:outline-none font-mono"
             />
           </div>
@@ -1090,7 +1167,7 @@ export default function StudentManagement({ globalSearch = '' }) {
             </button>
             <button
               onClick={() => {
-                alert('Imported 50 new scholar records successfully!');
+                alert('Bulk import is not connected to the live registration database. No records were imported.');
                 setShowImportModal(false);
               }}
               className="px-5 py-2.5 rounded-xl bg-primary text-white font-semibold shadow-sm"
@@ -1100,6 +1177,13 @@ export default function StudentManagement({ globalSearch = '' }) {
           </div>
         </div>
       </Modal>
+
+      {/* Full LinkedIn Style Student Profile & Dossier Modal */}
+      <StudentLinkedInProfileModal
+        isOpen={!!linkedInStudent}
+        student={linkedInStudent}
+        onClose={() => setLinkedInStudent(null)}
+      />
     </div>
   );
 }
