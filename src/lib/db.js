@@ -122,8 +122,17 @@ if (!global.__RIMT_DB_ADMINS) {
   global.__RIMT_DB_ADMINS_INITIALIZED = false;
 }
 
+if (!global.__RIMT_DB_COMPANIES) {
+  global.__RIMT_DB_COMPANIES = [];
+  global.__RIMT_DB_COMPANIES_INITIALIZED = false;
+}
+
 function getMemoryAdmins() {
   return global.__RIMT_DB_ADMINS || [];
+}
+
+function getMemoryCompanies() {
+  return global.__RIMT_DB_COMPANIES || [];
 }
 
 /**
@@ -1537,4 +1546,187 @@ export async function getAllStudentInternships() {
   }
 
   return internships;
+}
+
+/**
+ * ====================================================================
+ * COMPANY / CORPORATE RECRUITER PORTAL HELPERS
+ * ====================================================================
+ */
+
+export async function initCompanyDb() {
+  if (global.__RIMT_DB_COMPANIES_INITIALIZED) return;
+
+  const defaultHash = await hashPassword('Company@RIMT#2026');
+
+  global.__RIMT_DB_COMPANIES = [
+    {
+      id: 'comp-google-001',
+      company_name: 'Google LLC',
+      recruiter_name: 'Google Campus Talent',
+      email: 'recruiter@google.com',
+      password_hash: defaultHash,
+      auth_provider: 'google',
+      industry: 'Cloud & AI Technology',
+      avatar_url: 'https://ui-avatars.com/api/?name=Google&background=4285F4&color=fff&bold=true',
+      role: 'COMPANY',
+      status: 'ACTIVE',
+      created_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+      updated_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+    },
+    {
+      id: 'comp-msft-002',
+      company_name: 'Microsoft Corporation',
+      recruiter_name: 'Microsoft University Recruiting',
+      email: 'recruiter@microsoft.com',
+      password_hash: defaultHash,
+      auth_provider: 'google',
+      industry: 'Enterprise Software & Azure',
+      avatar_url: 'https://ui-avatars.com/api/?name=Microsoft&background=00A4EF&color=fff&bold=true',
+      role: 'COMPANY',
+      status: 'ACTIVE',
+      created_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+      updated_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+    },
+    {
+      id: 'comp-tcs-003',
+      company_name: 'Tata Consultancy Services',
+      recruiter_name: 'TCS Campus Talent',
+      email: 'campus@tcs.com',
+      password_hash: defaultHash,
+      auth_provider: 'email',
+      industry: 'IT Consulting & Services',
+      avatar_url: 'https://ui-avatars.com/api/?name=TCS&background=0B4EA2&color=fff&bold=true',
+      role: 'COMPANY',
+      status: 'ACTIVE',
+      created_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+      updated_at: new Date('2026-09-01T10:00:00Z').toISOString(),
+    },
+  ];
+
+  global.__RIMT_DB_COMPANIES_INITIALIZED = true;
+}
+
+export async function getCompanyByEmail(email) {
+  if (!email) return null;
+  await initCompanyDb();
+  const normalized = email.trim().toLowerCase();
+
+  if (HAS_SUPABASE_READ && !IS_TEST_ENV) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?email=ilike.${encodeURIComponent(normalized)}&select=*`,
+        {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data[0]) {
+          return {
+            ...data[0],
+            role: 'COMPANY',
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase getCompanyByEmail error:', err.message);
+    }
+  }
+
+  const found = getMemoryCompanies().find(
+    (c) => c.email && c.email.toLowerCase() === normalized
+  );
+  return found ? { ...found } : null;
+}
+
+export async function getCompanyById(id) {
+  if (!id) return null;
+  await initCompanyDb();
+
+  if (HAS_SUPABASE_READ && !IS_TEST_ENV) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${encodeURIComponent(id)}&select=*`,
+        {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data[0]) {
+          return {
+            ...data[0],
+            role: 'COMPANY',
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase getCompanyById error:', err.message);
+    }
+  }
+
+  const found = getMemoryCompanies().find((c) => c.id === id);
+  return found ? { ...found } : null;
+}
+
+export async function createCompany({
+  company_name,
+  recruiter_name,
+  email,
+  password_hash,
+  auth_provider = 'email',
+  industry = 'Corporate Recruitment',
+  avatar_url = null,
+}) {
+  await initCompanyDb();
+  const id = `comp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const now = new Date().toISOString();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const brandInitial = (company_name || 'Company').substring(0, 2).toUpperCase();
+  const fallbackAvatar = avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company_name || 'Company')}&background=6B0018&color=fff&bold=true`;
+
+  const newCompany = {
+    id,
+    company_name: (company_name || 'Corporate Partner').trim(),
+    recruiter_name: (recruiter_name || company_name || 'Recruiter').trim(),
+    email: normalizedEmail,
+    password_hash: password_hash || null,
+    auth_provider,
+    industry: (industry || 'Corporate Recruitment').trim(),
+    avatar_url: fallbackAvatar,
+    role: 'COMPANY',
+    status: 'ACTIVE',
+    created_at: now,
+    updated_at: now,
+  };
+
+  // Attempt to store in Supabase
+  const writeHeaders = getAdminWriteHeaders();
+  if (writeHeaders && HAS_SUPABASE_READ && !IS_TEST_ENV) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/companies`, {
+        method: 'POST',
+        headers: writeHeaders,
+        body: JSON.stringify(newCompany),
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows[0]) {
+          Object.assign(newCompany, rows[0]);
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase createCompany error, falling back to memory:', err.message);
+    }
+  }
+
+  getMemoryCompanies().unshift(newCompany);
+  return newCompany;
+}
+
+export async function getAllCompanies() {
+  await initCompanyDb();
+  return getMemoryCompanies();
 }

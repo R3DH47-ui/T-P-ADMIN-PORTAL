@@ -58,7 +58,11 @@ export default function Header({
           </span>
           <input
             className="w-full h-10 pl-10 pr-4 bg-transparent text-text-primary placeholder:text-text-secondary font-body-default text-xs sm:text-sm outline-none transition-all"
-            placeholder="Search students, companies, drives..."
+            placeholder={
+              admin?.role === 'COMPANY'
+                ? 'Search verified student talent pool, skills, projects...'
+                : 'Search students, companies, drives...'
+            }
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

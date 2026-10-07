@@ -6,7 +6,7 @@
 
 import { NextResponse } from 'next/server.js';
 import { verifyToken } from './auth.js';
-import { getUserById, getAdminById } from './db.js';
+import { getUserById, getAdminById, getCompanyById } from './db.js';
 
 /**
  * Helper to extract bearer token from cookies or authorization header.
@@ -25,13 +25,13 @@ export function extractToken(req) {
 
   // Next check cookie
   if (req.cookies && typeof req.cookies.get === 'function') {
-    const adminToken = req.cookies.get('admin_token')?.value;
+    const adminToken = req.cookies.get('admin_token')?.value || req.cookies.get('company_token')?.value;
     if (adminToken) return adminToken;
   }
 
   const rawCookieHeader = req.headers?.get?.('cookie');
   if (rawCookieHeader) {
-    const match = rawCookieHeader.match(/admin_token=([^;]+)/);
+    const match = rawCookieHeader.match(/(?:admin_token|company_token)=([^;]+)/);
     if (match && match[1]) return decodeURIComponent(match[1].trim());
   }
 
@@ -41,18 +41,32 @@ export function extractToken(req) {
 /**
  * Higher-Order Route Handler with Auth and Status Guard
  */
-export function withAuth(handler, { requiredRole = null, requireApproved = true } = {}) {
+export function withAuth(handler, { requiredRole = null, allowedRoles = null, requireApproved = true } = {}) {
   return async function (req, context) {
     try {
       const token = extractToken(req);
+
+      // Check role helper
+      const isRoleAllowed = (role) => {
+        if (!requiredRole && !allowedRoles) return true;
+        if (role === 'SUPER_ADMIN') return true;
+        if (allowedRoles && Array.isArray(allowedRoles)) {
+          return allowedRoles.includes(role);
+        }
+        if (requiredRole) {
+          return role === requiredRole;
+        }
+        return true;
+      };
 
       // 1. If an actual JWT token is provided, verify it first!
       if (token && token !== 'rimt-admin-master-token') {
         const decoded = await verifyToken(token);
         if (decoded) {
-          const adminId = decoded.adminId || decoded.id;
-          const liveAdmin = await getAdminById(adminId);
+          const userId = decoded.adminId || decoded.companyId || decoded.id;
 
+          // Check Admin first
+          const liveAdmin = await getAdminById(userId);
           if (liveAdmin) {
             if (liveAdmin.status !== 'ACTIVE') {
               return NextResponse.json(
@@ -61,15 +75,40 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
               );
             }
 
-            if (requiredRole && liveAdmin.role !== requiredRole && liveAdmin.role !== 'SUPER_ADMIN') {
+            if (!isRoleAllowed(liveAdmin.role)) {
               return NextResponse.json(
-                { error: `Forbidden. Requires ${requiredRole} privileges.`, code: 'FORBIDDEN_ROLE' },
+                { error: `Forbidden. Requires ${requiredRole || allowedRoles?.join('/')} privileges.`, code: 'FORBIDDEN_ROLE' },
                 { status: 403 }
               );
             }
 
             const { password_hash, ...safeAdmin } = liveAdmin;
             req.user = safeAdmin;
+            return handler(req, context);
+          }
+
+          // Check Company
+          const liveCompany = await getCompanyById(userId);
+          if (liveCompany) {
+            if (liveCompany.status !== 'ACTIVE') {
+              return NextResponse.json(
+                { error: 'This corporate recruiter account is deactivated.', code: 'ACCOUNT_DISABLED' },
+                { status: 403 }
+              );
+            }
+
+            if (!isRoleAllowed('COMPANY')) {
+              return NextResponse.json(
+                { error: `Forbidden. Module is locked for Corporate Guests. University Staff only.`, code: 'FORBIDDEN_ROLE' },
+                { status: 403 }
+              );
+            }
+
+            const { password_hash, ...safeCompany } = liveCompany;
+            req.user = {
+              ...safeCompany,
+              role: 'COMPANY',
+            };
             return handler(req, context);
           }
         }
@@ -105,10 +144,10 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
         );
       }
 
-      // Check if user is an Administrator
-      const adminId = decoded.adminId || decoded.id;
-      const liveAdmin = await getAdminById(adminId);
+      const userId = decoded.adminId || decoded.companyId || decoded.id;
 
+      // Check if user is an Administrator
+      const liveAdmin = await getAdminById(userId);
       if (liveAdmin) {
         if (liveAdmin.status !== 'ACTIVE') {
           return NextResponse.json(
@@ -117,9 +156,9 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
           );
         }
 
-        if (requiredRole && liveAdmin.role !== requiredRole && liveAdmin.role !== 'SUPER_ADMIN') {
+        if (!isRoleAllowed(liveAdmin.role)) {
           return NextResponse.json(
-            { error: `Forbidden. Requires ${requiredRole} privileges.`, code: 'FORBIDDEN_ROLE' },
+            { error: `Forbidden. Requires ${requiredRole || allowedRoles?.join('/')} privileges.`, code: 'FORBIDDEN_ROLE' },
             { status: 403 }
           );
         }
@@ -129,7 +168,32 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
         return handler(req, context);
       }
 
-      // If not an admin, check student record
+      // Check if user is a Company
+      const liveCompany = await getCompanyById(userId);
+      if (liveCompany) {
+        if (liveCompany.status !== 'ACTIVE') {
+          return NextResponse.json(
+            { error: 'This corporate recruiter account is deactivated.', code: 'ACCOUNT_DISABLED' },
+            { status: 403 }
+          );
+        }
+
+        if (!isRoleAllowed('COMPANY')) {
+          return NextResponse.json(
+            { error: `Forbidden. Module locked for Corporate Guests. Staff only.`, code: 'FORBIDDEN_ROLE' },
+            { status: 403 }
+          );
+        }
+
+        const { password_hash, ...safeCompany } = liveCompany;
+        req.user = {
+          ...safeCompany,
+          role: 'COMPANY',
+        };
+        return handler(req, context);
+      }
+
+      // If not an admin or company, check student record
       const liveUser = await getUserById(decoded.id);
       if (!liveUser) {
         return NextResponse.json(
