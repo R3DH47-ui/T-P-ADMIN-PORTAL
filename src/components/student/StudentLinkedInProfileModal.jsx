@@ -227,6 +227,7 @@ export default function StudentLinkedInProfileModal({
   const headline = data.headline || `${dept} Scholar @ RIMT University`;
   const status = (data.status || 'PENDING').toUpperCase();
   const bannerUrl = data.banner_url || DEFAULT_CAMPUS_BANNER;
+  const avatarUrl = data.avatar_url || data.profile_pic_url || data.photo_url || data.avatar || data.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=7A1D27&color=fff&bold=true`;
 
   // Real academic metrics — NO fake fallbacks
   const hasCgpa = data.cgpa !== null && data.cgpa !== undefined && !isNaN(Number(data.cgpa));
@@ -1284,6 +1285,12 @@ export default function StudentLinkedInProfileModal({
                       src={avatarUrl}
                       alt={fullName}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=7A1D27&color=fff&bold=true`;
+                        if (e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                        }
+                      }}
                     />
                   </div>
                   <div

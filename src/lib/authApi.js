@@ -135,7 +135,9 @@ export function saveAccountSession(adminUser, token) {
           email: email,
           role: 'COMPANY',
           roleTitle: 'Corporate Recruiter',
-          profile_pic_url: adminUser.avatar_url || adminUser.profile_pic_url || existing?.profile_pic_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0B4EA2&color=fff&bold=true`,
+          profile_pic_url: adminUser.logo_url || adminUser.avatar_url || adminUser.profile_pic_url || existing?.profile_pic_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0B4EA2&color=fff&bold=true`,
+          avatar_url: adminUser.logo_url || adminUser.avatar_url || adminUser.profile_pic_url || existing?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0B4EA2&color=fff&bold=true`,
+          logo_url: adminUser.logo_url || adminUser.avatar_url || null,
           token: token || adminUser.token || existing?.token || null,
           lastActive: new Date().toISOString(),
         }

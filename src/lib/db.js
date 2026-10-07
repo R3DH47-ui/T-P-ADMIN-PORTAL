@@ -1678,6 +1678,7 @@ export async function createCompany({
   auth_provider = 'email',
   industry = 'Corporate Recruitment',
   avatar_url = null,
+  logo_url = null,
 }) {
   await initCompanyDb();
   const id = `comp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
@@ -1685,7 +1686,7 @@ export async function createCompany({
   const normalizedEmail = email.trim().toLowerCase();
 
   const brandInitial = (company_name || 'Company').substring(0, 2).toUpperCase();
-  const fallbackAvatar = avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company_name || 'Company')}&background=6B0018&color=fff&bold=true`;
+  const fallbackAvatar = logo_url || avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(company_name || 'Company')}&background=0B4EA2&color=fff&bold=true`;
 
   const newCompany = {
     id,
@@ -1696,6 +1697,7 @@ export async function createCompany({
     auth_provider,
     industry: (industry || 'Corporate Recruitment').trim(),
     avatar_url: fallbackAvatar,
+    logo_url: fallbackAvatar,
     role: 'COMPANY',
     status: 'ACTIVE',
     created_at: now,
