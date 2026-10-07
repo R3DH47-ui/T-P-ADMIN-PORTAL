@@ -9,10 +9,21 @@ import { verifyToken } from './auth.js';
 import { getUserById, getAdminById } from './db.js';
 
 /**
- * Helper to extract bearer token from cookies or authorization header
+ * Helper to extract bearer token from cookies or authorization header.
+ * Prioritizes explicit Authorization header so multi-account sessions take precedence.
  */
 export function extractToken(req) {
-  // Check cookie (from NextRequest cookies or parsed cookie header)
+  // Check Authorization header FIRST (client sets this for whichever account is active)
+  const authHeader = req.headers?.get?.('authorization') || req.headers?.get?.('Authorization') || '';
+  if (authHeader.startsWith('Bearer ')) {
+    const raw = authHeader.substring(7).trim();
+    if (raw && raw !== '******') return raw;
+  }
+  if (authHeader && !authHeader.startsWith('Bearer ') && authHeader !== '******') {
+    return authHeader.trim();
+  }
+
+  // Next check cookie
   if (req.cookies && typeof req.cookies.get === 'function') {
     const adminToken = req.cookies.get('admin_token')?.value;
     if (adminToken) return adminToken;
@@ -24,11 +35,7 @@ export function extractToken(req) {
     if (match && match[1]) return decodeURIComponent(match[1].trim());
   }
 
-  const authHeader = req.headers?.get?.('authorization') || req.headers?.get?.('Authorization') || '';
-  if (authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7).trim();
-  }
-  return authHeader ? authHeader.trim() : null;
+  return null;
 }
 
 /**
@@ -39,7 +46,36 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
     try {
       const token = extractToken(req);
 
-      // Check for internal Admin Portal request or master token
+      // 1. If an actual JWT token is provided, verify it first!
+      if (token && token !== 'rimt-admin-master-token') {
+        const decoded = await verifyToken(token);
+        if (decoded) {
+          const adminId = decoded.adminId || decoded.id;
+          const liveAdmin = await getAdminById(adminId);
+
+          if (liveAdmin) {
+            if (liveAdmin.status !== 'ACTIVE') {
+              return NextResponse.json(
+                { error: 'This admin account has been deactivated.', code: 'ACCOUNT_DISABLED' },
+                { status: 403 }
+              );
+            }
+
+            if (requiredRole && liveAdmin.role !== requiredRole && liveAdmin.role !== 'SUPER_ADMIN') {
+              return NextResponse.json(
+                { error: `Forbidden. Requires ${requiredRole} privileges.`, code: 'FORBIDDEN_ROLE' },
+                { status: 403 }
+              );
+            }
+
+            const { password_hash, ...safeAdmin } = liveAdmin;
+            req.user = safeAdmin;
+            return handler(req, context);
+          }
+        }
+      }
+
+      // 2. Dev master token or fallback ONLY when NO individual valid admin token is present
       const isPortalAdmin = process.env.NODE_ENV === 'development'
         && (token === 'rimt-admin-master-token' || req.headers?.get?.('x-admin-portal') === 'true');
 
@@ -47,7 +83,7 @@ export function withAuth(handler, { requiredRole = null, requireApproved = true 
         req.user = {
           id: 'a0000000-0000-0000-0000-000000000001',
           full_name: 'Raj Kumar',
-          email: null,
+          email: 'raj.kumar@rimt.ac.in',
           role: 'ADMIN',
           status: 'ACTIVE',
         };

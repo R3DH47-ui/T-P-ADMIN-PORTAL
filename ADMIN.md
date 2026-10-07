@@ -1,9 +1,9 @@
 # 🛡️ ADMIN.md — RIMT University Institutional Placement & Operations Portal
 
 > **Single Source of Truth:** Master Memory, Architecture, Screens, Endpoints, and File Map for the entire RIMT Admin Portal & Integrated Student App.  
-> **Last Updated:** 2026-10-05  
+> **Last Updated:** 2026-10-07  
 > **Role:** Senior Full-Stack & System Logic Engineer Specification  
-> **Status:** Active; Talent Showcase live, fixed admin authorization active, LinkedIn profile tracker live, Cloudinary upload signing endpoint operational  
+> **Status:** Active; Student Profession Badges live, Official SVG Company Logos live, Multi-Account Session Isolation active, Gmail-Style Account Chooser live, Talent Showcase live, Cloudinary upload signing endpoint operational  
 
 ---
 
@@ -120,22 +120,28 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 │   │   ├── HeroCard.jsx          # Decorative hero banner card component
 │   │   ├── KpiCard.jsx           # KPI metric display card with icon and trend
 │   │   ├── auth/
-│   │   │   ├── AuthScreen.jsx    # Sign In only (no signup) with warm desert theme & fixed admin credentials
-│   │   │   └── AuthGuard.jsx     # Route protection wrapper preventing unauthenticated dashboard access
+│   │   │   ├── AuthScreen.jsx    # Sign In only (no signup) with warm desert theme, fixed admin credentials & Gmail-style account chooser
+│   │   │   └── AuthGuard.jsx     # Route protection wrapper with multi-account session isolation & isSameAdminAccount guards
+│   │   ├── common/
+│   │   │   └── CompanyBrandLogo.jsx  # ⭐ Self-contained SVG vector brand logos (Google, Microsoft, AWS, Deloitte, HDFC, TCS, L&T, Infosys, Wipro) — CORS-immune, responsive
+│   │   ├── placement/
+│   │   │   ├── PlacedStudentsCard.jsx   # ⭐ Placed students card with profession badges (getProfessionBadge), CompanyBrandLogo, tier-based styling
+│   │   │   └── HiringCompaniesSection.jsx # ⭐ Hiring companies section with official SVG logos & clickable Google Maps location links
 │   │   ├── profile/
-│   │   │   ├── ProfileMenu.jsx   # Header avatar dropdown menu (Profile, Change Password, Sign Out)
-│   │   │   └── ProfileModal.jsx  # Modal for photo upload & password management
+│   │   │   ├── ProfileMenu.jsx   # Header avatar dropdown menu (Profile, Change Password, Sign Out) with multi-account switcher
+│   │   │   ├── ProfileModal.jsx  # Modal for photo upload & password management
+│   │   │   └── AddAccountModal.jsx # ⭐ Full-page add account modal for multi-account Gmail-style sign-in
 │   │   └── student/
 │   │       ├── StudentLinkedInProfileModal.jsx  # ⭐ LinkedIn-Style Scholar Dossier view (2936 lines) with Cloudinary document upload
 │   │       ├── StudentDossierModal.jsx          # ⭐ Full Admin-Managed Student Dossier (7 tabs: Overview, Projects, Git, Certs, Internships, Academics, Audit)
-│   │       └── TalentProfileModal.jsx           # ⭐ NEW: Read-only student portfolio viewer for corporate recruiters (Talent Showcase)
+│   │       └── TalentProfileModal.jsx           # ⭐ Read-only student portfolio viewer for corporate recruiters (Talent Showcase)
 │   │
 │   ├── views/                    # Primary Admin Functional Screens
 │   │   ├── OnboardingApprovals.jsx # ⭐ Gated student approval queue, review drawer, reject modal
 │   │   ├── StudentManagement.jsx # Verified student directory, CGPA/Attendance columns, "Open Dossier" button
 │   │   ├── CompanyManagement.jsx # ⭐ RENAMED: "Talent Showcase" — approved student portfolio gallery with profile strength scoring, recruiter-facing card grid, and TalentProfileModal
 │   │   ├── DriveManagement.jsx   # Upcoming and active campus drives
-│   │   ├── PlacementStatistics.jsx # Real-time placement metrics and department charts
+│   │   ├── PlacementStatistics.jsx # Real-time placement metrics, department charts, placed students card with profession badges, and hiring companies with official SVG logos
 │   │   ├── TrainingManagement.jsx # Pre-placement training schedule and rosters
 │   │   ├── InternshipMonitoring.jsx # Student industrial internship tracking
 │   │   ├── ReportGeneration.jsx  # Exportable reports
@@ -155,12 +161,13 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 │   │
 │   ├── constants/                # Data and Design Constants
 │   │   ├── data.js               # Mock data for drives, student records, and training modules
-│   │   └── tokens.js             # Color palette, spacing, and typography definitions
+│   │   └── tokens.js             # Color palette, spacing, typography, and module registry definitions
 │   │
 │   └── styles/
 │       └── globals.css           # Global CSS, custom animations, Material Symbols font-face
 │
 ├── public/
+│   ├── campus-banner.jpg         # Campus hero banner image for auth screens
 │   ├── default-avatar.jpg        # Default student avatar fallback (JPEG)
 │   ├── default-avatar.png        # Default student avatar fallback (PNG)
 │   └── fonts/                    # Self-hosted Material Symbols fonts
@@ -229,11 +236,20 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
   - Registered applicant list and shortlisted student counters.
 
 ### 4.5 Placement Statistics (`src/views/PlacementStatistics.jsx`)
-- **Purpose:** Institutional analytics dashboard.
+- **Purpose:** Institutional analytics dashboard with live student placement and corporate hiring data.
 - **Features:**
   - Placement percentage by department.
   - Highest, median, and average package (LPA) benchmarks.
   - Visual charts and historical comparison trends.
+  - **Placed Students & Corporate Offers Card** (`src/components/placement/PlacedStudentsCard.jsx`):
+    - Lists all approved students paired with hiring companies from `src/lib/placementStats.js`.
+    - **Student Profession Badge:** Each student displays a color-coded profession pill with matching icon (🛡 Cyber Security → emerald, ☁ Cloud DevOps → sky, 💻 Developer → indigo, 📊 Risk Analyst → amber, 🏦 FinTech → teal, 🎶 Music/Singing → purple, 💃 Dance → pink) via `getProfessionBadge()`.
+    - **Official Company Brand Logos:** Uses `CompanyBrandLogo` SVG vectors (Google, Microsoft, AWS, Deloitte, HDFC, TCS) instead of external image URLs — immune to CORS/403 errors.
+    - **Tier Badges:** Packages color-coded by tier: Super Dream (≥15 LPA), Dream (≥10 LPA), Standard 1 (≥6 LPA), Entry.
+  - **Hiring Companies Section** (`src/components/placement/HiringCompaniesSection.jsx`):
+    - Displays the 6 HIRING_COMPANIES_CATALOG entries with official SVG logos via `CompanyBrandLogo`.
+    - Location badges link to Google Maps search for the company address.
+    - Shows SPOC contact, MoU status, package range, and sector info.
 
 ### 4.6 Training Management (`src/views/TrainingManagement.jsx`)
 - **Purpose:** Pre-placement soft-skills and technical training bootcamps.
@@ -735,11 +751,66 @@ NEXT_PUBLIC_SUPABASE_KEY=<anon-key>
 | **LinkedIn-Style Scholar Dossier** | `src/components/student/StudentLinkedInProfileModal.jsx`, `src/views/StudentManagement.jsx`, `src/views/OnboardingApprovals.jsx` | ✅ Complete — Hero banner, bio, CGPA/SGPA tracker, projects portfolio, documents vault, live admin overrides |
 | **Cloudinary Upload Signing** | `src/app/api/cloudinary/sign/route.js`, `.env` (CLOUDINARY_*) | ✅ Complete — Server-side SHA-1 signature generator, CORS-enabled, folder validation, mobile app integration via `EXPO_PUBLIC_CLOUDINARY_SIGNING_URL` |
 | **Talent Showcase (formerly Company Management)** | `src/views/CompanyManagement.jsx`, `src/components/student/TalentProfileModal.jsx`, `src/components/Sidebar.jsx`, `src/constants/tokens.js`, `src/lib/db.js` | ✅ Complete — Recruiter-facing student portfolio gallery with profile strength scoring, filter pills, department filters, sort options, grid/list views, and read-only TalentProfileModal. Sidebar and module registry renamed from "Company Management" to "Talent Showcase" with `person_search` icon. |
+| **Student Profession Badges** | `src/components/placement/PlacedStudentsCard.jsx`, `src/lib/placementStats.js` | ✅ Complete — Color-coded profession pills (Cyber Security, Cloud DevOps, Full Stack, FinTech, Risk Analyst, Dance, Music) with matching icons via `getProfessionBadge()`. Dynamic fallback profession resolution for diverse BCA/BSc specializations and custom talents (dancer, singer, etc.). |
+| **Official SVG Company Logos** | `src/components/common/CompanyBrandLogo.jsx`, `src/components/placement/PlacedStudentsCard.jsx`, `src/components/placement/HiringCompaniesSection.jsx` | ✅ Complete — Self-contained SVG vector brand logos for Google, Microsoft, AWS, Deloitte, HDFC Bank, TCS (plus L&T, Infosys, Wipro). Zero external URL dependencies; immune to CORS/Wikimedia 403 errors. |
+| **Multi-Account Session Isolation** | `src/lib/middleware.js`, `src/lib/authApi.js`, `src/components/auth/AuthGuard.jsx`, `src/components/auth/AuthScreen.jsx`, `src/components/profile/ProfileMenu.jsx`, `src/components/profile/AddAccountModal.jsx` | ✅ Complete — Gmail-style account chooser, 1-click sign-in, multi-account dropdown in profile menu, `isSameAdminAccount` session guards, token priority over stale cookies |
 | **Expo Mobile Admin Screens** | `src/expo/AdminPortalNavigator.jsx`, `src/expo/screens/*`, `src/expo/colors.js` | ✅ Present — 7 mobile admin screen components (Student, Company, Drive, Internship, Placement, Training, Report) |
 
 ---
 
 ## 11. Changelog
+- **2026-10-07 (Student Profession Badges, Official SVG Company Logos in Placed Students Card, Multi-Account Session Isolation, Corporate Logos & Gmail-Style Account Chooser):**
+  1. **Student Profession Badges in Placed Students Card:**
+     - Added `getProfessionBadge()` function to `src/components/placement/PlacedStudentsCard.jsx` — returns distinct icon + color badge for each profession category:
+       - 🛡 **Cyber Security** → emerald green (`shield` icon)
+       - ☁ **Cloud / DevOps / AWS / Azure** → sky blue (`cloud` icon)
+       - 💻 **Developer / SDE / Full Stack / Software** → indigo (`code` icon)
+       - 💃 **Dance / Dancer** → pink (`directions_walk` icon)
+       - 🎶 **Singing / Music / Artist** → purple (`music_note` icon)
+       - 📊 **Risk / Consultant / Analyst** → amber (`query_stats` icon)
+       - 🏦 **FinTech / Finance / Banking** → teal (`account_balance` icon)
+       - 🏷 **Default** → slate (`badge` icon)
+     - Each student row now displays their profession as a colorful pill badge next to their verified checkmark.
+     - Profession data flows from `src/lib/placementStats.js` → `getHiringPairForStudent()` → `getLivePlacedStudents()` → `item.student.profession`.
+  2. **Official SVG Company Logos in Placed Students Card:**
+     - Replaced external `logoUrl` image tags and generic Material Symbol fallbacks with `<CompanyBrandLogo company={item.company} />` — self-contained SVG vectors.
+     - Created `src/components/common/CompanyBrandLogo.jsx` with official vector logos for Google, Microsoft, AWS, Deloitte, HDFC Bank, TCS, L&T, Infosys, and Wipro. Dynamic monogram fallback for unknown companies.
+     - All SVGs are inline, responsive, CORS-immune, and never 403 on external hotlinks.
+  3. **Enhanced Profession Resolution in `placementStats.js`:**
+     - Added dynamic profession detection for diverse BCA/BSc specializations and custom talents (dancers, singers, musicians, etc.).
+     - Fallback profession is now department-aware: Cyber Security dept → `Cyber Security Specialist`, IT dept → `Enterprise IT Systems Engineer`, BCA/Computer dept → `Full Stack Software Developer`.
+     - Custom student professions (from `student.profession`, `student.headline`, or `student.bio`) are preserved and take priority.
+  4. **Fixed Session Reversion Bug (Sagrika → Raj Kumar):**
+     - Diagnosed and resolved root cause where clicking actions as administrator **Sagrika** reverted session to **Raj Kumar**.
+     - In `src/lib/middleware.js`, updated `extractToken(req)` to prioritize the explicit `Authorization: Bearer <token>` header over stale client cookies.
+     - In `withAuth`, verified individual JWT tokens and bound `req.user` to the decoded administrator identity before evaluating development fallback logic (`isPortalAdmin`), preventing `x-admin-portal: true` headers from hardcoding `Raj Kumar`.
+     - In `src/lib/authApi.js` (`getAdminMe`) and `src/components/auth/AuthGuard.jsx`, added active session matching guards (`isSameAdminAccount`) so background authentication revalidations cannot overwrite the currently active administrator.
+  5. **Official Corporate Brand Vector Logos (Hiring Companies Section):**
+     - Replaced generic Material Symbol placeholder icons with authentic, high-fidelity SVG brand logos in `src/components/placement/HiringCompaniesSection.jsx`:
+       - **Google India Pvt Ltd:** Official 4-color Google "G" vector logo.
+       - **Microsoft Corporation India:** Official 4-color square vector logo.
+       - **Amazon Web Services (AWS):** Official AWS smile arrow vector badge.
+       - **Deloitte USI:** Official Deloitte wordmark with lime green dot.
+       - **HDFC Bank Ltd:** Official blue & red geometric cross grid logo.
+       - **Tata Consultancy Services (TCS):** Official Tata blue brand emblem.
+       - Built-in vector support for **L&T**, **Infosys**, and **Wipro**, plus dynamic monogram fallbacks.
+     - Embedded SVGs are completely self-contained, fully responsive, and immune to external CORS/Wikimedia 403 hotlink errors.
+  6. **Gmail-Style Account Chooser & 1-Click Sign-In:**
+     - In `src/components/auth/AuthScreen.jsx`, introduced a **Gmail-Style Account Chooser** screen when remembered accounts exist on the device.
+     - Displays avatar, name, email, and role badge (`HOD BCA`, `Vice HOD BCA`).
+     - **1-Click Instant Sign-In:** Clicking an account signs in immediately without repeatedly typing username and password.
+     - Includes "Use another account" button to toggle manual credential form, and "Remove an account" device management.
+  7. **Multi-Account Dropdown & Session Preservation:**
+     - In `AuthGuard.jsx`, `handleSignOut` preserves accounts in `rimt_admin_accounts` instead of deleting them.
+     - In `ProfileMenu.jsx`, dynamically lists other logged-in accounts under the active session header with 1-click switching.
+     - Fixed `isSameAdminAccount` in `src/lib/authApi.js` so accounts with `email: null` are never accidentally overwritten.
+  8. **Dedicated Full-Page Add Account Route (`/admin/add-account`):**
+     - Created `src/components/profile/AddAccountModal.jsx` with RIMT crest, sweep sheen animation, Sign In / Register tabs, password strength meter, and quick-switch account cards.
+  9. **Interactive Google Maps Links:**
+     - Converted location badges (Karnataka, Telangana, Punjab, etc.) and geographical campus cards in `HiringCompaniesSection.jsx` into clickable Google Maps search links.
+   10. **Syntax Fix in `placementStats.js` & Turbopack API Verification:**
+      - Resolved `Expected ';', got ':'` Turbopack compilation error at `src/lib/placementStats.js:320` caused by duplicate object properties and redundant closing braces on the `student` payload in `getLivePlacedStudents()`.
+      - Validated syntax with `node -c` and verified live API response from `/api/placement-stats/placed-students` returning HTTP 200 with dynamic student profession badges and verified company corporate data.
 - **2026-10-05 (Company Management & Talent Profile Enhancements):**
   1. **Sidebar & Module Registry Restoration:** Replaced "Talent Showcase" with "Company Management" in `src/components/Sidebar.jsx` and `src/constants/tokens.js`, binding with the `business` icon and corporate directory descriptors. Updated action ribbon and hero headers in `src/views/CompanyManagement.jsx`.
   2. **Glossy Light Red "View Full Profile" Button & Glossy KPI Cards:** Re-styled the "View Full Profile" CTA on student talent cards into a glossy light red card/button (`h-9 w-full rounded-xl`, glassmorphic light red gradient, crisp crimson typography, glossy light reflection sweep). Re-styled the three mini KPI cards (Projects, Internships, Certificates) with high-gloss gradients, inset highlights, and clean borders while preserving exact compact dimensions.

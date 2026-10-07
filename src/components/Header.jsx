@@ -8,6 +8,9 @@ export default function Header({
   searchQuery,
   setSearchQuery,
   admin,
+  accounts,
+  onSwitchAccount,
+  onAddAccountSuccess,
   onOpenProfile,
   onOpenChangePassword,
   onSignOut,
@@ -87,6 +90,9 @@ export default function Header({
 
         <ProfileMenu
           admin={admin}
+          accounts={accounts}
+          onSwitchAccount={onSwitchAccount}
+          onAddAccountSuccess={onAddAccountSuccess}
           onOpenProfile={onOpenProfile}
           onOpenChangePassword={onOpenChangePassword}
           onSignOut={onSignOut}
