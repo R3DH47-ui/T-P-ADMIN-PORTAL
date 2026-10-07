@@ -33,6 +33,8 @@ export async function POST(req) {
 
     const passwordHash = await hashPassword(password);
 
+    const logo = logo_url || avatar_url || null;
+
     const newCompany = await createCompany({
       company_name: company_name.trim(),
       recruiter_name: (recruiter_name || company_name).trim(),
@@ -40,7 +42,8 @@ export async function POST(req) {
       password_hash: passwordHash,
       auth_provider: 'email',
       industry: (industry || 'Corporate Recruitment').trim(),
-      avatar_url: logo_url || avatar_url || null,
+      avatar_url: logo,
+      logo_url: logo,
     });
 
     const safeCompany = sanitizeUser(newCompany);

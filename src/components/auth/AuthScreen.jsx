@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   adminLogin,
   getSavedAccounts,
@@ -9,7 +9,6 @@ import {
   saveAccountSession,
   companyRegister,
   companyLogin,
-  companyGoogleLogin,
   isAdminAccount,
   isCompanyAccount,
 } from '@/lib/authApi';
@@ -45,45 +44,22 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
   const [recruiterName, setRecruiterName] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
   const [companyPassword, setCompanyPassword] = useState('');
+  const [companyConfirmPassword, setCompanyConfirmPassword] = useState('');
   const [companyIndustry, setCompanyIndustry] = useState('Technology & Software');
   const [companyRemember, setCompanyRemember] = useState(true);
   const [companyShowPassword, setCompanyShowPassword] = useState(false);
+  const [companyShowConfirmPassword, setCompanyShowConfirmPassword] = useState(false);
+
+  // Cloudinary Logo Upload State
+  const [companyLogoUrl, setCompanyLogoUrl] = useState('');
+  const [companyLogoPreview, setCompanyLogoPreview] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState('');
+  const logoInputRef = useRef(null);
 
   // Separate saved accounts strictly by role: Admin vs Company
   const adminSavedAccounts = savedAccounts.filter((acc) => isAdminAccount(acc));
   const companySavedAccounts = savedAccounts.filter((acc) => isCompanyAccount(acc));
-
-  // Google Simulation / One-Tap Modal State
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
-
-  // Pre-configured Google accounts for quick corporate recruiter testing
-  const quickGoogleAccounts = [
-    {
-      name: 'Google Talent Acquisition',
-      email: 'recruiter@google.com',
-      company_name: 'Google LLC',
-      avatar_url: 'https://ui-avatars.com/api/?name=Google&background=4285F4&color=fff&bold=true',
-    },
-    {
-      name: 'Microsoft University Recruiting',
-      email: 'recruiter@microsoft.com',
-      company_name: 'Microsoft Corporation',
-      avatar_url: 'https://ui-avatars.com/api/?name=Microsoft&background=00A4EF&color=fff&bold=true',
-    },
-    {
-      name: 'Amazon Campus Hiring',
-      email: 'recruiter@amazon.com',
-      company_name: 'Amazon / AWS',
-      avatar_url: 'https://ui-avatars.com/api/?name=Amazon&background=FF9900&color=000&bold=true',
-    },
-    {
-      name: 'Tata Consultancy Services',
-      email: 'campus.talent@tcs.com',
-      company_name: 'TCS',
-      avatar_url: 'https://ui-avatars.com/api/?name=TCS&background=0B4EA2&color=fff&bold=true',
-    },
-  ];
 
   // Load saved accounts on mount and initialize view modes
   useEffect(() => {
@@ -235,6 +211,65 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
   };
 
   // ────────────────────────────────────────────────────────────────
+  // COMPANY LOGO CLOUDINARY UPLOAD HANDLERS
+  // ────────────────────────────────────────────────────────────────
+  const handleLogoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (PNG, JPG, SVG, WebP).');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Logo image must be smaller than 8MB.');
+      return;
+    }
+
+    const localUrl = URL.createObjectURL(file);
+    setCompanyLogoPreview(localUrl);
+    setLogoUploadError('');
+    setError('');
+    setUploadingLogo(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/company/upload-logo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Failed to upload logo to Cloudinary.');
+      }
+
+      setCompanyLogoUrl(data.url);
+      setSuccessMsg('Company logo uploaded to Cloudinary successfully.');
+      setTimeout(() => setSuccessMsg(''), 3500);
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      setLogoUploadError(err.message || 'Logo upload failed');
+      setError(`Cloudinary logo upload failed: ${err.message}`);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = (e) => {
+    e?.stopPropagation();
+    setCompanyLogoUrl('');
+    setCompanyLogoPreview('');
+    setLogoUploadError('');
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────
   // COMPANY AUTH HANDLERS
   // ────────────────────────────────────────────────────────────────
   const handleCompanySubmit = async (e) => {
@@ -243,8 +278,40 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
     setSuccessMsg('');
 
     if (companyTab === 'register') {
-      if (!companyName.trim() || !companyEmail.trim() || !companyPassword) {
-        setError('Please complete all required fields for company registration.');
+      if (uploadingLogo) {
+        setError('Please wait for your company logo to finish uploading to Cloudinary.');
+        return;
+      }
+      if (!companyLogoUrl) {
+        setError('Please upload your official company logo (required for registration).');
+        return;
+      }
+      if (!companyName.trim()) {
+        setError('Please enter your company name.');
+        return;
+      }
+      if (!recruiterName.trim()) {
+        setError('Please enter the registering officer / recruiter full name.');
+        return;
+      }
+      if (!companyEmail.trim()) {
+        setError('Please enter your official corporate email.');
+        return;
+      }
+      if (!companyPassword) {
+        setError('Please create a password.');
+        return;
+      }
+      if (companyPassword.length < 6) {
+        setError('Password must be at least 6 characters long.');
+        return;
+      }
+      if (!companyConfirmPassword) {
+        setError('Please confirm your password.');
+        return;
+      }
+      if (companyPassword !== companyConfirmPassword) {
+        setError('Passwords do not match. Please verify both passwords.');
         return;
       }
 
@@ -252,10 +319,11 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
       try {
         const res = await companyRegister({
           company_name: companyName.trim(),
-          recruiter_name: recruiterName.trim() || companyName.trim(),
+          recruiter_name: recruiterName.trim(),
           email: companyEmail.trim(),
           password: companyPassword,
           industry: companyIndustry,
+          logo_url: companyLogoUrl,
         });
 
         setSuccessMsg(`Registered ${res.company.company_name}! Entering Talent Pool...`);
@@ -268,9 +336,9 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
         setLoading(false);
       }
     } else {
-      // Company Login
+      // Company Login (Existing)
       if (!companyEmail.trim() || !companyPassword) {
-        setError('Please enter your corporate email and password.');
+        setError('Please enter your official corporate email and password.');
         return;
       }
 
@@ -292,52 +360,6 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
         setLoading(false);
       }
     }
-  };
-
-  const handleGoogleAccountSelect = async (account) => {
-    setShowGoogleModal(false);
-    setError('');
-    setSuccessMsg('');
-    setLoading(true);
-
-    try {
-      const res = await companyGoogleLogin({
-        email: account.email,
-        name: account.name,
-        company_name: account.company_name,
-        avatar_url: account.avatar_url,
-      });
-
-      setSuccessMsg(
-        res.isNew
-          ? `Registered & signed in with Google (${res.company.company_name})!`
-          : `Signed in as ${res.company.company_name}!`
-      );
-
-      setTimeout(() => {
-        if (onAuthenticated) onAuthenticated(res.company);
-      }, 500);
-    } catch (err) {
-      setError(err.message || 'Google authentication failed.');
-      setLoading(false);
-    }
-  };
-
-  const handleCustomGoogleSubmit = (e) => {
-    e?.preventDefault();
-    if (!customGoogleEmail.trim()) return;
-
-    const email = customGoogleEmail.trim().toLowerCase();
-    const domain = email.split('@')[1] || 'Company';
-    const domainBase = domain.split('.')[0] || 'Company';
-    const compName = domainBase.charAt(0).toUpperCase() + domainBase.slice(1);
-
-    handleGoogleAccountSelect({
-      name: compName + ' Recruiter',
-      email: email,
-      company_name: compName,
-      avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(compName)}&background=4285F4&color=fff&bold=true`,
-    });
   };
 
   return (
@@ -892,49 +914,110 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                 </button>
               </div>
 
-              {/* Continue with Google Button */}
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => setShowGoogleModal(true)}
-                className="w-full h-11 px-4 mb-4 bg-white hover:bg-[#F8FAFC] active:scale-[0.99] border border-[#CBD5E1] rounded-xl text-xs sm:text-sm font-semibold text-[#1E293B] shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-3 cursor-pointer group"
-              >
-                {/* Official Multi-colored Google "G" Icon */}
-                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-
-              {/* Divider */}
-              <div className="relative my-4 text-center">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#E2E8F0]" />
-                </div>
-                <span className="relative bg-white px-3 text-[11px] font-medium text-[#94A3B8]">
-                  or with corporate credentials
-                </span>
-              </div>
-
               {/* Company Form */}
               <form onSubmit={handleCompanySubmit} className="space-y-3.5 text-left">
                 {companyTab === 'register' && (
                   <>
+                    {/* Company Logo Upload to Cloudinary */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold text-[#1E293B]">
+                          Company Logo *
+                        </label>
+                        <span className="text-[10px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/80 flex items-center gap-1 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                          Cloudinary Storage
+                        </span>
+                      </div>
+
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml,image/jpg"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+
+                      {companyLogoUrl || companyLogoPreview ? (
+                        <div className="relative p-2.5 bg-blue-50/50 border border-blue-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-12 h-12 rounded-lg bg-white p-1 border border-blue-200 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
+                              <img
+                                src={companyLogoPreview || companyLogoUrl}
+                                alt="Company logo preview"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-slate-800 truncate">
+                                  {companyName.trim() ? `${companyName} Logo` : 'Uploaded Logo'}
+                                </span>
+                                {companyLogoUrl && !uploadingLogo && (
+                                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 shrink-0">
+                                    Stored in Cloudinary ✓
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                                {uploadingLogo
+                                  ? 'Uploading to Cloudinary database...'
+                                  : 'Saved to Cloudinary database'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => logoInputRef.current?.click()}
+                              disabled={uploadingLogo}
+                              className="px-2.5 py-1 text-xs font-semibold text-[#0B4EA2] hover:bg-blue-100/70 rounded-lg transition-colors cursor-pointer"
+                            >
+                              Change
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleRemoveLogo}
+                              disabled={uploadingLogo}
+                              className="p-1 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Remove logo"
+                            >
+                              <span className="material-symbols-outlined text-base">close</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => !uploadingLogo && logoInputRef.current?.click()}
+                          className={`w-full p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                            uploadingLogo
+                              ? 'border-blue-400 bg-blue-50/40 cursor-wait'
+                              : 'border-[#CBD5E1] hover:border-[#0B4EA2] hover:bg-blue-50/30 bg-[#FAF8F5]'
+                          }`}
+                        >
+                          {uploadingLogo ? (
+                            <div className="flex items-center gap-2 text-xs font-semibold text-[#0B4EA2]">
+                              <span className="w-4 h-4 border-2 border-[#0B4EA2]/30 border-t-[#0B4EA2] rounded-full animate-spin" />
+                              <span>Uploading logo to Cloudinary database...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200/60 flex items-center justify-center text-[#0B4EA2] mb-1.5">
+                                <span className="material-symbols-outlined text-xl">cloud_upload</span>
+                              </div>
+                              <p className="text-xs font-bold text-slate-800">
+                                Click to upload company logo *
+                              </p>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                PNG, JPG, SVG or WebP &bull; Stored in Cloudinary database
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-[#1E293B] mb-1">
                         Company Name *
@@ -956,7 +1039,7 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
 
                     <div>
                       <label className="block text-xs font-semibold text-[#1E293B] mb-1">
-                        Recruiter Full Name
+                        Register Full Name *
                       </label>
                       <div className="relative">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
@@ -967,6 +1050,7 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                           value={recruiterName}
                           onChange={(e) => setRecruiterName(e.target.value)}
                           placeholder="e.g. Sarah Jenkins"
+                          required
                           className="w-full h-10 pl-9 pr-3 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
                         />
                       </div>
@@ -974,20 +1058,27 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
 
                     <div>
                       <label className="block text-xs font-semibold text-[#1E293B] mb-1">
-                        Industry / Hiring Sector
+                        Industry / Hiring Sector *
                       </label>
-                      <select
-                        value={companyIndustry}
-                        onChange={(e) => setCompanyIndustry(e.target.value)}
-                        className="w-full h-10 px-3 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
-                      >
-                        <option value="Technology & Software">Technology &amp; Software</option>
-                        <option value="Cloud Computing & AI">Cloud Computing &amp; AI</option>
-                        <option value="Finance & Banking">Finance &amp; Banking (FinTech)</option>
-                        <option value="Consulting & Strategy">Consulting &amp; Strategy</option>
-                        <option value="Core Engineering">Core Engineering</option>
-                        <option value="Healthcare & Life Sciences">Healthcare &amp; Analytics</option>
-                      </select>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg pointer-events-none">
+                          category
+                        </span>
+                        <select
+                          value={companyIndustry}
+                          onChange={(e) => setCompanyIndustry(e.target.value)}
+                          className="w-full h-10 pl-9 pr-3 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
+                        >
+                          <option value="Technology & Software">Technology &amp; Software</option>
+                          <option value="Cloud Computing & AI">Cloud Computing &amp; AI</option>
+                          <option value="Finance & Banking">Finance &amp; Banking (FinTech)</option>
+                          <option value="Consulting & Strategy">Consulting &amp; Strategy</option>
+                          <option value="Core Engineering">Core Engineering</option>
+                          <option value="Healthcare & Life Sciences">Healthcare &amp; Life Sciences</option>
+                          <option value="E-Commerce & Retail">E-Commerce &amp; Retail</option>
+                          <option value="Telecommunications">Telecommunications</option>
+                        </select>
+                      </div>
                     </div>
                   </>
                 )}
@@ -1012,34 +1103,115 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#1E293B] mb-1">
-                    Password *
-                  </label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
-                      lock
-                    </span>
-                    <input
-                      type={companyShowPassword ? 'text' : 'password'}
-                      value={companyPassword}
-                      onChange={(e) => setCompanyPassword(e.target.value)}
-                      placeholder="Enter password"
-                      required
-                      autoComplete={companyTab === 'register' ? 'new-password' : 'current-password'}
-                      className="w-full h-10 pl-9 pr-9 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setCompanyShowPassword(!companyShowPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] p-1"
-                    >
-                      <span className="material-symbols-outlined text-base">
-                        {companyShowPassword ? 'visibility_off' : 'visibility'}
+                {companyTab === 'register' ? (
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+                        Create Password *
+                      </label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
+                          lock
+                        </span>
+                        <input
+                          type={companyShowPassword ? 'text' : 'password'}
+                          value={companyPassword}
+                          onChange={(e) => setCompanyPassword(e.target.value)}
+                          placeholder="Create password (min. 6 characters)"
+                          required
+                          autoComplete="new-password"
+                          className="w-full h-10 pl-9 pr-9 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCompanyShowPassword(!companyShowPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] p-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            {companyShowPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold text-[#1E293B]">
+                          Confirm Password *
+                        </label>
+                        {companyConfirmPassword && (
+                          <span
+                            className={`text-[10px] font-semibold ${
+                              companyPassword === companyConfirmPassword
+                                ? 'text-emerald-600'
+                                : 'text-rose-600'
+                            }`}
+                          >
+                            {companyPassword === companyConfirmPassword
+                              ? 'Passwords match ✓'
+                              : 'Passwords do not match'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
+                          lock_reset
+                        </span>
+                        <input
+                          type={companyShowConfirmPassword ? 'text' : 'password'}
+                          value={companyConfirmPassword}
+                          onChange={(e) => setCompanyConfirmPassword(e.target.value)}
+                          placeholder="Re-enter password to confirm"
+                          required
+                          autoComplete="new-password"
+                          className={`w-full h-10 pl-9 pr-9 bg-[#FAF8F5] border rounded-xl text-xs text-[#221C18] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 transition-all ${
+                            companyConfirmPassword && companyPassword !== companyConfirmPassword
+                              ? 'border-rose-400 focus:ring-rose-200 focus:border-rose-500'
+                              : 'border-[#DDD4C1] focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2]'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCompanyShowConfirmPassword(!companyShowConfirmPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] p-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            {companyShowConfirmPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+                      Password *
+                    </label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-lg">
+                        lock
                       </span>
-                    </button>
+                      <input
+                        type={companyShowPassword ? 'text' : 'password'}
+                        value={companyPassword}
+                        onChange={(e) => setCompanyPassword(e.target.value)}
+                        placeholder="Enter password"
+                        required
+                        autoComplete="current-password"
+                        className="w-full h-10 pl-9 pr-9 bg-[#FAF8F5] border border-[#DDD4C1] rounded-xl text-xs text-[#221C18] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B4EA2]/20 focus:border-[#0B4EA2] transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCompanyShowPassword(!companyShowPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] p-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-base">
+                          {companyShowPassword ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {companyTab === 'login' && (
                   <div className="flex items-center justify-between pt-0.5">
@@ -1058,13 +1230,13 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                 {/* Submit CTA */}
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || uploadingLogo}
                   className="w-full h-11 mt-1 bg-[#0B4EA2] hover:bg-[#083E82] active:scale-[0.99] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-[#0B4EA2]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <>
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>{companyTab === 'register' ? 'Registering...' : 'Verifying...'}</span>
+                      <span>{companyTab === 'register' ? 'Registering Company...' : 'Verifying Credentials...'}</span>
                     </>
                   ) : (
                     <>
@@ -1089,7 +1261,7 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                           setCompanyTab('login');
                           setError('');
                         }}
-                        className="font-bold text-[#0B4EA2] hover:underline"
+                        className="font-bold text-[#0B4EA2] hover:underline cursor-pointer"
                       >
                         Sign In here
                       </button>
@@ -1103,7 +1275,7 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
                           setCompanyTab('register');
                           setError('');
                         }}
-                        className="font-bold text-[#0B4EA2] hover:underline"
+                        className="font-bold text-[#0B4EA2] hover:underline cursor-pointer"
                       >
                         Register your company
                       </button>
@@ -1118,97 +1290,6 @@ export default function AuthScreen({ onAuthenticated, initialPortalType = 'admin
 
     </div>
   </main>
-
-      {/* ══════════════════════════════════════════════════════════════
-          GOOGLE ONE-TAP / INTERACTIVE SELECTION MODAL
-         ══════════════════════════════════════════════════════════════ */}
-      {showGoogleModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-slate-200 text-left relative">
-            <button
-              onClick={() => setShowGoogleModal(false)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1"
-            >
-              ✕
-            </button>
-
-            <div className="flex items-center gap-2 mb-4">
-              <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 leading-tight">
-                  Sign in with Google
-                </h3>
-                <p className="text-[11px] text-slate-500">Choose a corporate Google account</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 mb-4">
-              {quickGoogleAccounts.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => handleGoogleAccountSelect(acc)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 flex items-center gap-3 text-left transition-all cursor-pointer group"
-                >
-                  <img
-                    src={acc.avatar_url}
-                    alt={acc.name}
-                    className="w-9 h-9 rounded-full object-cover ring-1 ring-slate-200 shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 truncate">
-                      {acc.company_name}
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate">{acc.email}</p>
-                  </div>
-                  <span className="material-symbols-outlined text-sm text-slate-300 group-hover:text-blue-600">
-                    arrow_forward
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Google Email input */}
-            <form onSubmit={handleCustomGoogleSubmit} className="pt-3 border-t border-slate-100">
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Or enter corporate Google workspace email:
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={customGoogleEmail}
-                  onChange={(e) => setCustomGoogleEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="flex-1 h-9 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <button
-                  type="submit"
-                  className="px-3 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer"
-                >
-                  Continue
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Footer System Credits */}
       <footer className="relative z-10 w-full py-4 text-center text-xs text-[#8C8070] border-t border-[#E5DEC9] bg-[#FAF8F5]/85">
