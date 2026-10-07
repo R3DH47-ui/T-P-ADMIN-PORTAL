@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminByName } from '@/lib/db';
+import { getAdminByName, getAdminByEmail } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/auth';
 import { sanitizeUser } from '@/lib/middleware';
 
@@ -17,7 +17,7 @@ export async function POST(req) {
       );
     }
 
-    const admin = await getAdminByName(name);
+    const admin = (await getAdminByName(name)) || (await getAdminByEmail(name));
     if (!admin) {
       // Generic error to prevent enumeration
       return NextResponse.json(

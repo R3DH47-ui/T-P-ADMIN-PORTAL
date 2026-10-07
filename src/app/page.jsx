@@ -16,7 +16,7 @@ import ProfileTab from '../views/ProfileTab';
 import ProfileModal from '../components/profile/ProfileModal';
 
 function AdminPortalDashboard() {
-  const { admin, setAdmin, signOut } = useAdminAuth();
+  const { admin, setAdmin, accounts, switchAccount, addAccount, signOut } = useAdminAuth();
   const [activeModule, setActiveModule] = useState('students');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,6 +44,9 @@ function AdminPortalDashboard() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         admin={admin}
+        accounts={accounts}
+        onSwitchAccount={switchAccount}
+        onAddAccountSuccess={addAccount}
         onOpenProfile={() => openProfileModal('profile')}
         onOpenChangePassword={() => openProfileModal('password')}
         onSignOut={signOut}
