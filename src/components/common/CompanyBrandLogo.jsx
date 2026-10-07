@@ -8,6 +8,20 @@ import React from 'react';
  * and remain sharp across Retina, 4K, and mobile devices.
  */
 export default function CompanyBrandLogo({ company }) {
+  const customLogo = company?.logoUrl || company?.logo_url || company?.avatar_url;
+  if (customLogo && typeof customLogo === 'string' && (customLogo.startsWith('http://') || customLogo.startsWith('https://') || customLogo.startsWith('data:'))) {
+    return (
+      <img
+        src={customLogo}
+        alt={company?.name || company?.company_name || 'Company Logo'}
+        className="w-full h-full object-contain"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+    );
+  }
+
   const norm = (company?.shortName || company?.name || company?.id || '').toLowerCase();
 
   // 1. Google India

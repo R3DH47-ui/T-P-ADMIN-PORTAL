@@ -3,7 +3,7 @@
 > **Single Source of Truth:** Master Memory, Architecture, Screens, Endpoints, and File Map for the entire RIMT Admin Portal & Integrated Student App.  
 > **Last Updated:** 2026-10-07  
 > **Role:** Senior Full-Stack & System Logic Engineer Specification  
-> **Status:** Active; Student Profession Badges live, Official SVG Company Logos live, Multi-Account Session Isolation active, Gmail-Style Account Chooser live, Talent Showcase live, Cloudinary upload signing endpoint operational  
+> **Status:** Active; **Dual-Portal Auth (Admin + Company)** live, Role-Based Access Control enforced, Company Registration/Login/Google OAuth operational, Student Profession Badges live, Official SVG Company Logos live, Multi-Account Session Isolation active, Gmail-Style Account Chooser live, Talent Showcase live, Cloudinary upload signing endpoint operational  
 
 ---
 
@@ -71,10 +71,14 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 ├── src/
 │   ├── app/                      # Next.js App Router
 │   │   ├── layout.jsx            # Universal root layout, HTML shell, Material Symbols font preloading
-│   │   ├── page.jsx              # Main Single-Page Admin Shell orchestrating active module views & AuthGuard
+│   │   ├── page.jsx              # ⭐ Main Single-Page Admin Shell with CompanyLockedModuleView, AuthGuard, role-based module rendering
 │   │   ├── admin/
 │   │   │   └── auth/
 │   │   │       └── page.jsx      # Standalone /admin/auth route page
+│   │   ├── company/              # ⭐ Corporate Recruiter Portal Routes
+│   │   │   ├── page.jsx          # /company — Company dashboard (AuthGuard with initialPortalType="company")
+│   │   │   └── auth/
+│   │   │       └── page.jsx      # /company/auth — Standalone company registration/login screen
 │   │   └── api/                  # Backend REST Route Handlers
 │   │       ├── auth/
 │   │       │   ├── signup/route.js # POST: 4-field registration (Name, Roll No, Dept, Year) -> status: PENDING (no token)
@@ -93,10 +97,17 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 │   │       │   └── requests/
 │   │       │       ├── route.js    # GET: Queued student applications (?status=PENDING)
 │   │       │       └── [id]/
-│   │       │           ├── route.js         # GET: Single student application details & full dossier; PATCH: Update profile/dossier/academic metrics with audit trail
-│   │       │           ├── approve/route.js # PATCH: Approve student -> status: APPROVED
-│   │       │           ├── reject/route.js  # PATCH: Reject student -> status: REJECTED + reason
-│   │       │           └── revoke/route.js  # PATCH: Revoke student access -> status: REVOKED
+│   │       │           ├── route.js         # GET: Single student application details & full dossier; PATCH: Update profile/dossier/academic metrics
+│   │       │           ├── approve/route.js # PATCH: Approve student
+│   │       │           ├── reject/route.js  # PATCH: Reject student + reason
+│   │       │           └── revoke/route.js  # PATCH: Revoke student access
+│   │       ├── company/                     # ⭐ CORPORATE RECRUITER AUTH ENDPOINTS (NEW)
+│   │       │   └── auth/
+│   │       │       ├── register/route.js     # POST: Company registration (email/password) → JWT + httpOnly cookie
+│   │       │       ├── login/route.js        # POST: Company sign-in (email/password) → JWT + httpOnly cookie
+│   │       │       ├── google/route.js       # POST: Google OAuth — auto-registers new company if first-time
+│   │       │       ├── me/route.js           # GET: Active company recruiter identity (withAuth requiredRole='COMPANY')
+│   │       │       └── logout/route.js       # POST: Clear company_token cookie
 │   │       ├── cloudinary/
 │   │       │   └── sign/
 │   │       │       └── route.js    # POST: Cloudinary upload signature generator (SHA-1); OPTIONS: CORS preflight
@@ -105,23 +116,24 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 │   │
 │   ├── lib/                      # Core Backend Utilities & Security Guards
 │   │   ├── auth.js               # Web Crypto PBKDF2 password hashing & HMAC-SHA256 JWT
-│   │   ├── authApi.js            # Client-side API client for admin auth endpoints
-│   │   ├── db.js                 # Supabase adapter, student/admin records, dossier CRUD, and memory fallback
-│   │   ├── middleware.js         # withAuth route guard enforcing admin & student role and status checks
+│   │   ├── authApi.js            # ⭐ Client-side API client for admin + company auth endpoints (companyRegister, companyLogin, companyGoogleLogin)
+│   │   ├── db.js                 # ⭐ Supabase adapter, student/admin/company records, dossier CRUD, company CRUD, and memory fallback
+│   │   ├── middleware.js         # ⭐ withAuth route guard enforcing admin, company & student role/status checks with getCompanyById lookup
+│   │   ├── placementStats.js     # Live placement statistics, student-company matching, profession badges, package benchmarks
 │   │   ├── schema.sql            # PostgreSQL schema definition with students and admins tables
 │   │   ├── supabaseClient.js     # Shared Supabase client for realtime subscriptions (eventsPerSecond: 10)
 │   │   └── enable_realtime.sql   # SQL to enable realtime publication on dossier tables
 │   │
 │   ├── components/               # Admin UI Shell Components
 │   │   ├── Header.jsx            # Top bar: Dynamic admin avatar, search query, notifications
-│   │   ├── Sidebar.jsx           # 3-state responsive drawer with Onboarding Approvals badge count; "Talent Showcase" replaces "Company Management" sidebar entry
+│   │   ├── Sidebar.jsx           # ⭐ 3-state responsive drawer with role-based module locking (COMPANY: 🔒 lock icon + "Staff" badge on restricted modules)
 │   │   ├── Modal.jsx             # Accessible backdrop dialog wrapper for reviews & actions
 │   │   ├── FilterPills.jsx       # Filterable pill-style toggle buttons
 │   │   ├── HeroCard.jsx          # Decorative hero banner card component
 │   │   ├── KpiCard.jsx           # KPI metric display card with icon and trend
 │   │   ├── auth/
-│   │   │   ├── AuthScreen.jsx    # Sign In only (no signup) with warm desert theme, fixed admin credentials & Gmail-style account chooser
-│   │   │   └── AuthGuard.jsx     # Route protection wrapper with multi-account session isolation & isSameAdminAccount guards
+│   │   │   ├── AuthScreen.jsx    # ⭐ Dual-Portal gateway: Institutional Admin + Company Portal switcher, company register/login tabs, Google OAuth modal
+│   │   │   └── AuthGuard.jsx     # ⭐ Route protection wrapper with multi-account session isolation, company + admin session support, initialPortalType prop
 │   │   ├── common/
 │   │   │   └── CompanyBrandLogo.jsx  # ⭐ Self-contained SVG vector brand logos (Google, Microsoft, AWS, Deloitte, HDFC, TCS, L&T, Infosys, Wipro) — CORS-immune, responsive
 │   │   ├── placement/
@@ -382,6 +394,54 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
   - **Auth:** Authenticated user with `status === 'APPROVED'`. Returns profile data.
 * **`PUT /api/profile`**
   - **Auth:** Authenticated user with `status === 'APPROVED'`. Modifies profile data.
+
+### 5.6 Corporate Company Authentication (`src/app/api/company/auth/`)
+> ⭐ **NEW:** Full company recruiter authentication system with email/password registration, sign-in, and Google OAuth.
+
+* **`POST /api/company/auth/register`**
+  - **Auth:** Public.
+  - **Request Body:**
+    ```json
+    {
+      "company_name": "Google LLC",
+      "recruiter_name": "Sarah Jenkins",
+      "email": "recruiter@google.com",
+      "password": "SecurePass@123",
+      "industry": "Cloud Computing & AI"
+    }
+    ```
+  - **Response (200 OK):**
+    ```json
+    { "success": true, "message": "Company registration successful.", "token": "<jwt>", "company": { "id": "comp-...", "company_name": "Google LLC", "role": "COMPANY", "status": "ACTIVE" } }
+    ```
+  - **Response (409 Conflict):** `{ "error": "An account with this corporate email already exists." }`
+  - **Security:** Password hashed with PBKDF2-SHA256. JWT token (14-day expiry) set as `company_token` httpOnly cookie.
+
+* **`POST /api/company/auth/login`**
+  - **Auth:** Public.
+  - **Request Body:** `{ "email": "recruiter@google.com", "password": "SecurePass@123", "remember_me": true }`
+  - **Responses:**
+    - `404 Not Found`: `{ "error": "No registered company found with this email." }`
+    - `401 Unauthorized`: `{ "error": "Invalid corporate email or password." }`
+    - `403 Forbidden`: `{ "error": "This corporate partner account is currently deactivated." }`
+    - `200 OK`: `{ "success": true, "token": "<jwt>", "company": { ... } }`
+  - **Security:** Session duration: 30 days (remember_me) or 7 days.
+
+* **`POST /api/company/auth/google`**
+  - **Auth:** Public.
+  - **Request Body:** `{ "email": "recruiter@google.com", "name": "Google Talent Acquisition", "avatar_url": "...", "company_name": "Google LLC" }`
+  - **Behavior:** Auto-registers new company if email not found; signs in existing company. Infers company name from email domain if not provided.
+  - **Response (200 OK):** `{ "success": true, "isNew": true|false, "token": "<jwt>", "company": { ... } }`
+  - **Security:** 30-day JWT session. `company_token` httpOnly cookie.
+
+* **`GET /api/company/auth/me`**
+  - **Auth:** `withAuth(handler, { requiredRole: 'COMPANY' })` — JWT Bearer token required.
+  - **Response (200 OK):** `{ "success": true, "company": { "id": "...", "company_name": "...", "role": "COMPANY", ... } }`
+
+* **`POST /api/company/auth/logout`**
+  - **Auth:** Public.
+  - **Response (200 OK):** `{ "success": true, "message": "Corporate session ended." }`
+  - **Side Effect:** Deletes `company_token` cookie.
 
 ---
 
@@ -647,6 +707,35 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - **Access Protocol:** Signed URLs generated on-demand by backend API (`db.getSignedCertificateUrl`).
 - **Storage RLS:** Admins have full access; students can only download objects where they own the associated visible certificate record.
 
+### 6.5 Companies Table (In-Memory + Supabase)
+```sql
+-- Company / Corporate Recruiter accounts (in-memory store with Supabase persistence)
+-- Schema used by initCompanyDb(), getCompanyByEmail(), getCompanyById(), createCompany(), getAllCompanies()
+CREATE TABLE IF NOT EXISTS public.companies (
+  id TEXT PRIMARY KEY,                        -- e.g. 'comp-1791354383460-9f8ey'
+  company_name TEXT NOT NULL,                 -- e.g. 'Google LLC'
+  recruiter_name TEXT NOT NULL,               -- e.g. 'Google Campus Talent'
+  email TEXT NOT NULL UNIQUE,                 -- Normalized lowercase corporate email
+  password_hash TEXT,                         -- PBKDF2-SHA256 hash (NULL for Google OAuth accounts)
+  auth_provider TEXT NOT NULL DEFAULT 'email', -- 'email' | 'google'
+  industry TEXT DEFAULT 'Corporate Recruitment', -- e.g. 'Cloud & AI Technology'
+  avatar_url TEXT,                            -- UI Avatars fallback or custom avatar
+  role TEXT NOT NULL DEFAULT 'COMPANY',        -- Always 'COMPANY'
+  status TEXT NOT NULL DEFAULT 'ACTIVE',        -- 'ACTIVE' | 'DISABLED'
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Default Seeded Companies (via `initCompanyDb()` in `db.js`):**
+| ID | Company | Email | Auth Provider | Industry |
+|---|---|---|---|---|
+| `comp-google-001` | Google LLC | `recruiter@google.com` | google | Cloud & AI Technology |
+| `comp-msft-002` | Microsoft Corporation | `recruiter@microsoft.com` | google | Enterprise Software & Azure |
+| `comp-tcs-003` | Tata Consultancy Services | `campus@tcs.com` | email | IT Consulting & Services |
+
+**Default Password:** `Company@RIMT#2026` (PBKDF2-SHA256, salt: `rimt-salt-key`, 10,000 iterations)
+
 ---
 
 ## 7. Admin-Managed Student Dossier & Strict Manual Academic Control Specification
@@ -754,11 +843,29 @@ NEXT_PUBLIC_SUPABASE_KEY=<anon-key>
 | **Student Profession Badges** | `src/components/placement/PlacedStudentsCard.jsx`, `src/lib/placementStats.js` | ✅ Complete — Color-coded profession pills (Cyber Security, Cloud DevOps, Full Stack, FinTech, Risk Analyst, Dance, Music) with matching icons via `getProfessionBadge()`. Dynamic fallback profession resolution for diverse BCA/BSc specializations and custom talents (dancer, singer, etc.). |
 | **Official SVG Company Logos** | `src/components/common/CompanyBrandLogo.jsx`, `src/components/placement/PlacedStudentsCard.jsx`, `src/components/placement/HiringCompaniesSection.jsx` | ✅ Complete — Self-contained SVG vector brand logos for Google, Microsoft, AWS, Deloitte, HDFC Bank, TCS (plus L&T, Infosys, Wipro). Zero external URL dependencies; immune to CORS/Wikimedia 403 errors. |
 | **Multi-Account Session Isolation** | `src/lib/middleware.js`, `src/lib/authApi.js`, `src/components/auth/AuthGuard.jsx`, `src/components/auth/AuthScreen.jsx`, `src/components/profile/ProfileMenu.jsx`, `src/components/profile/AddAccountModal.jsx` | ✅ Complete — Gmail-style account chooser, 1-click sign-in, multi-account dropdown in profile menu, `isSameAdminAccount` session guards, token priority over stale cookies |
+| **Dual-Portal Auth (Admin + Company)** | `src/components/auth/AuthScreen.jsx`, `src/components/auth/AuthGuard.jsx`, `src/app/api/company/auth/*` (5 routes), `src/lib/db.js` (company CRUD), `src/lib/authApi.js` (company client), `src/lib/middleware.js` (company role guard) | ✅ Complete — Segmented Admin/Company portal switcher, company registration (email/password), sign-in, Google OAuth with One-Tap modal, JWT sessions with httpOnly cookies, 3 seeded companies (Google, Microsoft, TCS) |
+| **Company Role-Based Access Control** | `src/components/Sidebar.jsx`, `src/app/page.jsx`, `src/app/company/page.jsx`, `src/app/company/auth/page.jsx` | ✅ Complete — `companyAllowedModules = ['companies', 'statistics']`, locked modules show 🔒 + "Staff" badge, `CompanyLockedModuleView` with access privileges card, company sidebar brand card adapts blue theme, dedicated `/company` and `/company/auth` routes |
 | **Expo Mobile Admin Screens** | `src/expo/AdminPortalNavigator.jsx`, `src/expo/screens/*`, `src/expo/colors.js` | ✅ Present — 7 mobile admin screen components (Student, Company, Drive, Internship, Placement, Training, Report) |
 
 ---
 
 ## 11. Changelog
+- **2026-10-07 (Company Sidebar Locked Tabs Removal, Multi-Account Chooser Isolation, and Balanced Auth Gateway Status):**
+  1. **Company Sidebar Cleanup (Problem 1 Solved):**
+     - Updated `src/components/Sidebar.jsx` navigation renderer: When `userRole === 'COMPANY'`, `navItems` is strictly filtered with `companyAllowedModules.includes(item.id)`.
+     - In the left sidebar under "Core Modules", corporate recruiters now only see the 2 modules they have access to: **Company Management** and **Placement Statistics**. All 6 locked/restricted modules (Onboarding Approvals, Student Management, Drive Management, Training Management, Internship Monitoring, Report Generation) are completely removed from the DOM.
+  2. **Profile Menu Multi-Account Switcher Role Isolation (Problem 2 Solved):**
+     - In `src/components/profile/ProfileMenu.jsx`, filtered `otherAccounts` strictly by account role (`isCompany ? accIsCompany : !accIsCompany`).
+     - Corporate recruiters logged in as a company now only see other corporate company accounts in the "Switch Account" menu (admin accounts like Raj Kumar or Sagrika are completely filtered out).
+     - Administrators logged in now only see other administrator accounts in the "Switch Account" menu (company accounts like Microsoft or Google are completely filtered out).
+     - "Add another account" dynamically routes to `/company/auth` for company recruiters and `/admin/add-account` for administrators.
+     - Updated `handleSwitchAccount` in `src/components/auth/AuthGuard.jsx` to seamlessly support switching into company accounts via `companyLogin` credential fallback.
+  3. **Auth Screen Multi-Account Chooser Isolation & Balanced Gateway Status (Problem 3 Solved):**
+     - In `src/components/auth/AuthScreen.jsx`, strictly segmented saved accounts into `adminSavedAccounts` and `companySavedAccounts`.
+     - **Institutional Admin Gateway:** The "Choose an account" screen now only renders authorized administrator accounts (`Raj Kumar`, `Sagrika`). Corporate company accounts are completely filtered out.
+     - **Company Portal Gateway:** Introduced a dedicated corporate account chooser that only renders corporate company accounts (`Microsoft Corporation`, `Google LLC`, `TCS`). Institutional admin accounts are completely filtered out.
+     - **Balanced Gateway Status:** Replaced the asymmetric, redundant second-row switch button (`Administrative Access Gateway` on left vs `Company Access ->` on right) with a clean, beautifully centered, balanced gateway status indicator badge with micro-status pills for both Institutional Admin and Corporate Recruiter gateways.
+     - Full automated test suite passing (63/63 tests) and Next.js Turbopack production build verified cleanly.
 - **2026-10-07 (Student Profession Badges, Official SVG Company Logos in Placed Students Card, Multi-Account Session Isolation, Corporate Logos & Gmail-Style Account Chooser):**
   1. **Student Profession Badges in Placed Students Card:**
      - Added `getProfessionBadge()` function to `src/components/placement/PlacedStudentsCard.jsx` — returns distinct icon + color badge for each profession category:
@@ -846,6 +953,58 @@ NEXT_PUBLIC_SUPABASE_KEY=<anon-key>
   4. **Build & Test Verification:**
      - `npm run build` compiled 100% cleanly (7/7 static and dynamic routes optimized).
      - Full test suite passing 65/65 (26/26 dossier-academic, 21/21 onboarding, 18/18 admin-auth).
+- **2026-10-07 (Corporate Company Portal, Registration Screen, Google OAuth & Role-Based Access Control):**
+  1. **Dual Portal Authentication (`AuthScreen.jsx` — 1071 lines):** Added corporate company recruiter authentication directly on the login gateway alongside administrative sign-in. Top segmented pill switcher allows switching between **"Institutional Admin"** (maroon `#7A1D27`) and **"Company Portal"** (blue `#0B4EA2`). Quick "Company Access →" button positioned at top right of the card (exactly where the red circle was marked in the user's screenshot). Company Portal shows "Corporate Recruiter Gateway" badge with back-to-admin toggle.
+  2. **Corporate Registration & Sign In:** Created dedicated tab-based flows:
+     - **Register Company (New):** Company Name*, Recruiter Full Name, Industry/Hiring Sector dropdown (6 options), Official Corporate Email*, Password* fields.
+     - **Sign In (Existing):** Email + Password with "Remember corporate session" toggle.
+     - **Continue with Google:** Official multi-colored Google SVG icon button → opens interactive Google One-Tap modal with 4 pre-configured corporate accounts (Google, Microsoft, Amazon, TCS) + custom email input for any Google Workspace.
+     - All registrations and sign-ins persist directly to the database with JWT tokens and httpOnly cookies.
+  3. **Backend API Endpoints (`src/app/api/company/auth/*`):** Created 5 REST route handlers:
+     - `POST /api/company/auth/register`: Validates fields, checks email uniqueness, hashes password with PBKDF2-SHA256, creates company in DB, generates 14-day JWT, sets `company_token` httpOnly cookie.
+     - `POST /api/company/auth/login`: Authenticates corporate email and password, validates account status (ACTIVE required), generates JWT (7 or 30 day based on remember_me).
+     - `POST /api/company/auth/google`: Handles Google OAuth — auto-registers new company if email not found (infers name from domain), signs in existing companies, generates 30-day session.
+     - `GET /api/company/auth/me`: Returns sanitized active company recruiter profile, protected by `withAuth(handler, { requiredRole: 'COMPANY' })`.
+     - `POST /api/company/auth/logout`: Clears `company_token` cookie.
+  4. **Database & In-Memory Store (`src/lib/db.js`):** Added 5 company CRUD functions:
+     - `initCompanyDb()`: Seeds default hiring partners (Google LLC, Microsoft, TCS) with PBKDF2-hashed default password `Company@RIMT#2026`.
+     - `getCompanyByEmail(email)`: Supabase `ilike` query + in-memory fallback.
+     - `getCompanyById(id)`: Supabase `eq` query + in-memory fallback.
+     - `createCompany({...})`: Creates company record in both Supabase and in-memory store with auto-generated ID, avatar fallback, timestamps.
+     - `getAllCompanies()`: Returns all companies from in-memory store.
+     - `getMemoryCompanies()`: Internal accessor for `global.__RIMT_DB_COMPANIES` array.
+  5. **Client-Side Auth API (`src/lib/authApi.js`):** Added 3 company client methods:
+     - `companyRegister({company_name, recruiter_name, email, password, industry})`: POST to `/api/company/auth/register`, stores JWT in localStorage, saves account session.
+     - `companyLogin({email, password, remember_me})`: POST to `/api/company/auth/login`, stores JWT.
+     - `companyGoogleLogin({email, name, avatar_url, company_name})`: POST to `/api/company/auth/google`, stores JWT.
+- **2026-10-07 (Role Isolation, Auto-Repair Sanitization & Dual-Portal Account Strictness):**
+  1. **Sidebar Locked Modules Exclusion (Image 1 fix):** Updated `src/components/Sidebar.jsx` so when logged in as a Corporate Recruiter (`COMPANY` role), locked operational modules (`Onboarding Approvals`, `Student Management`, `Drive Management`, `Training Management`, `Internship Monitoring`, `Report Generation`) are completely excluded from the DOM. Only **Company Management** and **Placement Statistics** are rendered under "Core Modules".
+  2. **Top-Right Profile Menu Account Switching Isolation (Image 2 fix):** Updated `src/components/profile/ProfileMenu.jsx` to enforce strict isolation using `isAdminAccount` and `isCompanyAccount`. Company logins only ever see other corporate company accounts; institutional admin logins only ever see other institutional admin accounts.
+  3. **Dual-Portal Auth Chooser Strict Isolation & Auto-Repair (Images 3 & 4 fix):**
+     - Fixed bug in `src/lib/authApi.js` `saveAccountSession()` where `company_name` was defaulting to `fullName` even for admins.
+     - Added `isAdminAccount(acc)` and `isCompanyAccount(acc)` predicate classifiers in `src/lib/authApi.js`.
+     - Added auto-repair on `getSavedAccounts()`: if any stored record for Raj Kumar, Sagrika, or `@rimt.ac.in` admin has legacy `company_name` or corporate fields in `localStorage`, it is automatically stripped, sanitized, and updated in `localStorage` as pure `ADMIN`.
+     - In `src/components/auth/AuthScreen.jsx`, completely segregated `adminSavedAccounts` and `companySavedAccounts`. Raj Kumar exclusively appears in the Institutional Admin chooser and can never appear in the Company Portal chooser.
+     - Replaced asymmetrical sub-header row with a clean, centered, balanced gateway indicator for both Institutional Admin and Company Portal gateways.
+- **2026-10-06 (Corporate Recruiter Portal & Dual-Portal Authentication Integration):**
+  1. **Dual-Portal Auth Architecture:** Embedded corporate recruiter login and registration directly alongside the existing institutional admin login in `src/components/auth/AuthScreen.jsx`.
+  2. **Pill-Tab Switcher & Mode Separation:** Added dual-tab switcher: **Institutional Admin** (maroon `#6B0018`) vs **Company Portal** (navy `#0B4EA2`).
+     - Extract tokens from both `admin_token` and `company_token` cookies.
+  7. **Role-Based Access Control (`Sidebar.jsx`, `page.jsx`):**
+     - `Sidebar.jsx` accepts `userRole` prop and defines `companyAllowedModules = ['companies', 'statistics']`.
+     - Locked modules show padlock 🔒 icon replacing normal icon, "Staff" badge, muted styling, and tooltip `(Staff Only)`.
+     - Sidebar brand card adapts: "RIMT Corporate" + "Recruiter Portal" badge (blue theme) vs "RIMT Trust" + "T&P Admin Portal" (maroon theme).
+     - Footer shows "Company Access — Verified Corporate Partner" for company users.
+     - Active module styling uses blue gradient for company, maroon gradient for admin.
+     - `page.jsx` renders `CompanyLockedModuleView` when `isCompany && activeModule !== 'companies' && activeModule !== 'statistics'`.
+     - `CompanyLockedModuleView`: Premium lock card with amber lock icon, "Staff-Restricted Operational Module" badge, access privileges checklist (✅ Talent Pool, ✅ Statistics, 🔒 Approvals), and two CTAs (Browse Talent Pool, Placement Statistics).
+     - Company users default to `activeModule: 'companies'` on login.
+     - For institutional staff (Raj Kumar, Sagrika), all 8 modules remain completely open.
+  8. **Dedicated Routes:**
+     - `/company` → `src/app/company/page.jsx` — Renders `AdminPortalDashboard` inside `AuthGuard` with `initialPortalType="company"`.
+     - `/company/auth` → `src/app/company/auth/page.jsx` — Standalone company auth screen, redirects to `/company` after authentication.
+     - `/admin/auth` → Existing admin auth page.
+  9. **AuthGuard Enhancement (`AuthGuard.jsx`):** Updated to accept `initialPortalType` prop, forwarding it to `AuthScreen` so `/company` routes default to the Company Portal tab.
 - **2026-09-30 (Admin-Managed Student Dossier & Strict Manual Academic Control):**
   1. **Database Schema & RLS:** Added migration `supabase/migrations/20260930_admin_student_dossier.sql` creating 9 tables: `public.student_profiles`, `public.student_projects`, `public.student_git_projects`, `public.student_certificates`, `public.student_internships`, `public.student_academic_summary`, `public.student_semester_records`, `public.student_grades`, and `public.admin_audit_log`. Implemented `public.is_admin()` and `public.current_student_id()` helper functions. RLS ensures full admin CRUD and read-only student access to their own records where `is_visible = true`, with ZERO student write paths. Private bucket `student-certificates` created with signed URL access protocol.
   2. **Strict Manual-Only Academic Governance:** Enforced institutional policy where CGPA (0.00 – 10.00), overall attendance % (0.00 – 100.00), backlogs, semester SGPA, and subject grades are written strictly and exclusively by administrators. Completely eliminated all auto-derivation, triggers, cron jobs, and edge functions. Unset values display as "—" (never fake 0 or 8.65). Changes to grades do not recalculate CGPA. Confirmation modal displaying Old vs New comparison diff is mandatory before saving academic records. Every mutation is logged in `admin_audit_log`.

@@ -169,8 +169,8 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 0,
       ctc: 38.5,
       role: 'Cloud & Cyber Security Engineer',
-      profession: 'Cyber Security Specialist',
-      professionCategory: 'Cyber Security',
+      profession: 'Software Engineer',
+      professionCategory: 'Software Engineering',
       date: '2026-10-04',
     };
   }
@@ -179,7 +179,7 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 1,
       ctc: 34.5,
       role: 'Full Stack Systems Associate',
-      profession: 'Full Stack Web Developer',
+      profession: 'Full Stack Developer',
       professionCategory: 'Software Engineering',
       date: '2026-10-02',
     };
@@ -189,8 +189,8 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 2,
       ctc: 28.0,
       role: 'SDE – Distributed Cloud Systems',
-      profession: 'Cloud DevOps Architect',
-      professionCategory: 'Cloud Computing',
+      profession: 'Software Engineer',
+      professionCategory: 'Software Engineering',
       date: '2026-09-29',
     };
   }
@@ -199,8 +199,8 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 3,
       ctc: 14.5,
       role: 'Technology Risk & Enterprise Analyst',
-      profession: 'Enterprise Risk & IT Consultant',
-      professionCategory: 'Risk Advisory',
+      profession: 'Full Stack Developer',
+      professionCategory: 'Software Engineering',
       date: '2026-09-25',
     };
   }
@@ -209,8 +209,8 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 4,
       ctc: 12.0,
       role: 'FinTech Systems Associate',
-      profession: 'FinTech Software Engineer',
-      professionCategory: 'Financial Technology',
+      profession: 'Software Engineer',
+      professionCategory: 'Software Engineering',
       date: '2026-09-21',
     };
   }
@@ -219,8 +219,8 @@ function getHiringPairForStudent(student, index) {
       companyIndex: 5,
       ctc: 9.5,
       role: 'Systems Engineer – Digital Innovator',
-      profession: 'Core Systems Programmer',
-      professionCategory: 'Systems Engineering',
+      profession: 'Full Stack Developer',
+      professionCategory: 'Software Engineering',
       date: '2026-09-18',
     };
   }
@@ -230,23 +230,23 @@ function getHiringPairForStudent(student, index) {
   const customLower = customProf.toLowerCase();
   const deptLower = String(student.department || student.dept || '').toLowerCase();
 
-  let fallbackProf = 'Software Development Engineer';
-  let fallbackCat = 'Technology';
+  let fallbackProf = index % 2 === 0 ? 'Software Engineer' : 'Full Stack Developer';
+  let fallbackCat = 'Software Engineering';
 
-  if (customLower.includes('dance')) {
-    fallbackProf = 'Creative Arts & Dance Performer';
-    fallbackCat = 'Creative Arts';
-  } else if (customLower.includes('sing') || customLower.includes('music')) {
-    fallbackProf = 'Vocal Artist & Audio Producer';
-    fallbackCat = 'Performing Arts';
+  if (customLower.includes('cloud') || customLower.includes('devops')) {
+    fallbackProf = 'Cloud & DevOps Engineer';
+    fallbackCat = 'Cloud Computing';
   } else if (customLower.includes('cyber') || deptLower.includes('cyber')) {
     fallbackProf = 'Cyber Security Specialist';
     fallbackCat = 'Cyber Security';
-  } else if (deptLower.includes('it') || deptLower.includes('information')) {
-    fallbackProf = 'Enterprise IT Systems Engineer';
-    fallbackCat = 'Information Technology';
-  } else if (deptLower.includes('bca') || deptLower.includes('computer')) {
-    fallbackProf = 'Full Stack Software Developer';
+  } else if (customLower.includes('data') || customLower.includes('ai')) {
+    fallbackProf = 'Data Engineer';
+    fallbackCat = 'Data Science';
+  } else if (customLower.includes('full stack') || customLower.includes('fullstack')) {
+    fallbackProf = 'Full Stack Developer';
+    fallbackCat = 'Software Engineering';
+  } else {
+    fallbackProf = index % 2 === 0 ? 'Software Engineer' : 'Full Stack Developer';
     fallbackCat = 'Software Engineering';
   }
 
@@ -257,10 +257,65 @@ function getHiringPairForStudent(student, index) {
     companyIndex: cIndex,
     ctc: company.baseCtcLpa,
     role: company.assignedRole,
-    profession: student.profession || student.headline || fallbackProf,
+    profession: fallbackProf,
     professionCategory: fallbackCat,
     date: '2026-09-15',
   };
+}
+
+/**
+ * Cleans student profession by removing institutional noise
+ * (e.g., "BCA Scholar @ RIMT University | Software Engineer" -> "Software Engineer")
+ */
+export function cleanStudentProfession(rawProf, student = {}, index = 0) {
+  let prof = String(rawProf || '').trim();
+
+  // If pipe exists, take tech portion or last portion
+  if (prof.includes('|')) {
+    const parts = prof.split('|').map((p) => p.trim()).filter(Boolean);
+    const techPart = parts.find((p) => /engineer|developer|sde|analyst|architect|specialist|programmer/i.test(p));
+    prof = techPart || parts[parts.length - 1];
+  }
+
+  // Remove university, institution, scholar, and noise
+  prof = prof
+    .replace(/@\s*rimt\s*(university)?/gi, '')
+    .replace(/rimt\s*(university)?/gi, '')
+    .replace(/scholar\b/gi, '')
+    .replace(/department of [^|]*/gi, '')
+    .replace(/\b(bca|mca|b\.tech|btech|bsc|cs)\b/gi, '')
+    .replace(/\bblack\b/gi, '')
+    .replace(/[@|•·-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const lower = prof.toLowerCase();
+  if (lower.includes('full stack') || lower.includes('fullstack')) {
+    return 'Full Stack Developer';
+  }
+  if (lower.includes('software') || lower.includes('sde') || lower.includes('developer') || lower.includes('programmer')) {
+    return 'Software Engineer';
+  }
+  if (lower.includes('cloud') || lower.includes('devops')) {
+    return 'Cloud & DevOps Engineer';
+  }
+  if (lower.includes('cyber') || lower.includes('security')) {
+    return 'Cyber Security Specialist';
+  }
+  if (lower.includes('data') || lower.includes('ai')) {
+    return 'Data Engineer';
+  }
+  if (lower.includes('risk') || lower.includes('analyst')) {
+    return 'Systems Analyst';
+  }
+
+  // Specific name fallbacks
+  const name = String(student.name || student.full_name || '').toLowerCase();
+  if (name.includes('kajal') || name.includes('prahlad')) return 'Full Stack Developer';
+  if (name.includes('shahzeb') || name.includes('ahmed') || name.includes('sohel')) return 'Software Engineer';
+  if (name.includes('ismail')) return 'Cloud & DevOps Engineer';
+
+  return index % 2 === 0 ? 'Software Engineer' : 'Full Stack Developer';
 }
 
 /**
@@ -295,7 +350,7 @@ export async function getLivePlacedStudents() {
     const studentRoll = studentRecord.roll_number || studentRecord.roll_no || 'RIMT-26';
     const studentDept = studentRecord.department || studentRecord.dept || 'Computer Applications';
     const studentPhoto = studentRecord.avatar_url || studentRecord.avatar || null;
-    const studentProfession = studentRecord.profession || studentRecord.headline || pair.profession;
+    const studentProfession = cleanStudentProfession(pair.profession || studentRecord.profession, studentRecord, index);
 
     return {
       offerId: `offer-${studentRecord.id || index + 1}`,

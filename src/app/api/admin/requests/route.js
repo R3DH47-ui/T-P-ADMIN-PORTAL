@@ -27,4 +27,4 @@ async function handler(req) {
   }
 }
 
-export const GET = withAuth(handler, { requiredRole: 'ADMIN' });
+export const GET = withAuth(handler, { allowedRoles: ['ADMIN', 'COMPANY'] });

@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import AuthScreen from './AuthScreen';
-import { getAdminMe, adminLogout, getSavedAccounts, saveAccountSession, removeAccountSession, isSameAdminAccount, adminLogin } from '@/lib/authApi';
+import {
+  getAdminMe,
+  adminLogout,
+  getSavedAccounts,
+  saveAccountSession,
+  removeAccountSession,
+  isSameAdminAccount,
+  adminLogin,
+  companyLogin,
+} from '@/lib/authApi';
 
 const AdminAuthContext = createContext(null);
 
@@ -12,7 +21,7 @@ export function useAdminAuth() {
 
 const SPLASH_SHOWN_KEY = 'rimt_splash_shown';
 
-export default function AuthGuard({ children }) {
+export default function AuthGuard({ children, initialPortalType = 'admin' }) {
   const [admin, setAdmin] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [mounted, setMounted] = useState(false);
@@ -128,13 +137,23 @@ export default function AuthGuard({ children }) {
       // Ensure active token exists; if missing, authenticate seamlessly
       if (!activeToken) {
         try {
-          const res = await adminLogin({
-            name: targetAccount.full_name || targetAccount.name,
-            password: 'Admin@RIMT#2026',
-            remember_me: true,
-          });
-          activeToken = res.token;
-          targetAccount = res.admin;
+          if (targetAccount.role === 'COMPANY' && targetAccount.email) {
+            const res = await companyLogin({
+              email: targetAccount.email,
+              password: 'Company@RIMT#2026',
+              remember_me: true,
+            });
+            activeToken = res.token;
+            targetAccount = res.company;
+          } else {
+            const res = await adminLogin({
+              name: targetAccount.full_name || targetAccount.name,
+              password: 'Admin@RIMT#2026',
+              remember_me: true,
+            });
+            activeToken = res.token;
+            targetAccount = res.admin;
+          }
         } catch (e) {}
       }
 
@@ -217,7 +236,7 @@ export default function AuthGuard({ children }) {
 
   // Not authenticated: render the Login screen
   if (!admin) {
-    return <AuthScreen onAuthenticated={handleAuthenticated} />;
+    return <AuthScreen onAuthenticated={handleAuthenticated} initialPortalType={initialPortalType} />;
   }
 
   // Authenticated: render the admin app immediately

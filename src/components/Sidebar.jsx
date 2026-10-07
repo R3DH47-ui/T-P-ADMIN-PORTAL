@@ -8,7 +8,12 @@ export default function Sidebar({
   setActiveModule,
   mobileOpen,
   setMobileOpen,
+  userRole = 'ADMIN',
+  onLockedModuleClick,
 }) {
+  const isCompany = userRole === 'COMPANY';
+  const companyAllowedModules = ['companies', 'statistics'];
+
   const navItems = [
     {
       id: 'approvals',
@@ -96,12 +101,16 @@ export default function Sidebar({
           <div
             className="m-3 sm:m-4 p-3.5 relative overflow-hidden rounded-2xl flex items-center gap-3 backdrop-blur-xl border border-white/80 shadow-md group transition-all duration-300 hover:shadow-xl hover:scale-[1.01]"
             style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 242, 244, 0.85) 45%, rgba(255, 250, 240, 0.8) 75%, rgba(255, 255, 255, 0.92) 100%)',
-              boxShadow: 'rgba(107, 0, 24, 0.1) 0px 12px 28px -5px, rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(231, 185, 74, 0.15) 0px 0px 16px inset',
+              background: isCompany
+                ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 246, 255, 0.85) 45%, rgba(255, 250, 240, 0.8) 75%, rgba(255, 255, 255, 0.92) 100%)'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 242, 244, 0.85) 45%, rgba(255, 250, 240, 0.8) 75%, rgba(255, 255, 255, 0.92) 100%)',
+              boxShadow: isCompany
+                ? 'rgba(11, 78, 162, 0.1) 0px 12px 28px -5px, rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(231, 185, 74, 0.15) 0px 0px 16px inset'
+                : 'rgba(107, 0, 24, 0.1) 0px 12px 28px -5px, rgba(255, 255, 255, 0.95) 0px 1px 0px inset, rgba(231, 185, 74, 0.15) 0px 0px 16px inset',
             }}
           >
             {/* Ambient glows */}
-            <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-rose-500/20 blur-xl pointer-events-none animate-aura-pulse" />
+            <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full ${isCompany ? 'bg-blue-500/20' : 'bg-rose-500/20'} blur-xl pointer-events-none animate-aura-pulse`} />
             <div
               className="absolute -left-6 -bottom-6 w-24 h-24 rounded-full bg-[#ffdf9b]/30 blur-lg pointer-events-none animate-aura-pulse"
               style={{ animationDelay: '2.4s' }}
@@ -118,7 +127,6 @@ export default function Sidebar({
                 className="h-full w-full object-contain relative z-10 transition-transform duration-300 group-hover/logo:scale-105"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuC19AQmgWL-gUir-ndxuF4jup3xrY5qBj64LUXlgD9RJE6IRXQl7Uw9pQ_cKLppluBw_ZpAaGrjzn9MM_33NeGwHee4byWlTWDl3k3ZH1ODJBySdYc1fAI_vX56Ks6Y_9rsUeDdfxgzgIKrwrKJRiXXd43-8bqVix0hb9h_KVy-x333S8_1qgi_MEC7mirEEZdIdmjQrVxbxQLOkTdB8x3YlxqRC5q1PzKVSKVWY-4rZfKHynQQWu8oLw4z4yUS8WIugw"
               />
-              {/* High-gloss sweep beam directly over RIMT logo */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
                 <div className="w-6 h-[250%] bg-gradient-to-r from-transparent via-white/90 to-transparent absolute -top-1/2 left-0 animate-logo-sweep pointer-events-none" />
               </div>
@@ -127,8 +135,8 @@ export default function Sidebar({
             {/* Title / Badges (hidden on tablet rail) */}
             <div className="relative z-10 flex flex-col min-w-0 flex-1 md:hidden lg:flex">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-primary tracking-tight truncate">
-                  RIMT Trust
+                <span className={`text-sm font-bold tracking-tight truncate ${isCompany ? 'text-[#0B4EA2]' : 'text-primary'}`}>
+                  {isCompany ? 'RIMT Corporate' : 'RIMT Trust'}
                 </span>
                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-green opacity-75"></span>
@@ -136,8 +144,12 @@ export default function Sidebar({
                 </span>
               </div>
               <div className="mt-0.5 inline-flex items-center">
-                <span className="px-1.5 py-0.5 rounded-full bg-tint-maroon/70 text-[9px] font-bold text-primary border border-rose-200/80 uppercase tracking-wider shadow-sm">
-                  T&amp;P Admin Portal
+                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider shadow-sm ${
+                  isCompany
+                    ? 'bg-blue-50 text-[#0B4EA2] border-blue-200'
+                    : 'bg-tint-maroon/70 text-primary border-rose-200/80'
+                }`}>
+                  {isCompany ? 'Recruiter Portal' : 'T&P Admin Portal'}
                 </span>
               </div>
             </div>
@@ -152,32 +164,49 @@ export default function Sidebar({
 
           {/* Navigation Links with Smooth Zoom Animation on Hover */}
           <nav className="flex flex-col px-2 sm:px-3 gap-2 mt-1">
-            {navItems.map((item) => {
+            {(isCompany ? navItems.filter((item) => companyAllowedModules.includes(item.id)) : navItems).map((item) => {
+              const isLocked = isCompany && !companyAllowedModules.includes(item.id);
               const isActive = activeModule === item.id;
+
               return (
                 <button
                   key={item.id}
                   onClick={() => {
-                    setActiveModule(item.id);
+                    if (isLocked) {
+                      if (onLockedModuleClick) {
+                        onLockedModuleClick(item);
+                      }
+                      setActiveModule(item.id);
+                    } else {
+                      setActiveModule(item.id);
+                    }
                     setMobileOpen(false);
                   }}
                   className={`group relative flex items-center gap-3 px-3.5 py-3 rounded-xl text-left overflow-hidden cursor-pointer
                     transform transition-all duration-250 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                    hover:scale-[1.06] hover:translate-x-1.5 hover:z-20 active:scale-[0.97]
+                    hover:scale-[1.04] hover:translate-x-1 hover:z-20 active:scale-[0.98]
                     ${
                       isActive
-                        ? 'text-white shadow-md border-t border-white/30 hover:shadow-2xl hover:shadow-primary/40'
+                        ? isCompany && !isLocked
+                          ? 'text-white shadow-md border-t border-white/30'
+                          : 'text-white shadow-md border-t border-white/30 hover:shadow-2xl hover:shadow-primary/40'
+                        : isLocked
+                        ? 'bg-slate-100/70 opacity-70 hover:opacity-100 border border-slate-200/60 text-slate-500 hover:text-slate-700'
                         : 'bg-gradient-to-br from-white/95 via-surface-container-low/70 to-surface-container-high/60 backdrop-blur-md shadow-sm hover:shadow-xl hover:shadow-slate-300/80 border-t border-white/80 ring-1 ring-black/5 text-text-primary hover:text-primary hover:border-white'
                     }`}
                   style={
                     isActive
                       ? {
-                          background: 'linear-gradient(135deg, rgb(139, 29, 44) 0%, rgb(110, 21, 33) 100%)',
-                          boxShadow: 'rgba(107, 0, 24, 0.35) 0px 6px 18px, rgba(255, 255, 255, 0.4) 0px 1px 1px inset',
+                          background: isCompany && !isLocked
+                            ? 'linear-gradient(135deg, rgb(11, 78, 162) 0%, rgb(8, 62, 130) 100%)'
+                            : 'linear-gradient(135deg, rgb(139, 29, 44) 0%, rgb(110, 21, 33) 100%)',
+                          boxShadow: isCompany && !isLocked
+                            ? 'rgba(11, 78, 162, 0.35) 0px 6px 18px, rgba(255, 255, 255, 0.4) 0px 1px 1px inset'
+                            : 'rgba(107, 0, 24, 0.35) 0px 6px 18px, rgba(255, 255, 255, 0.4) 0px 1px 1px inset',
                         }
                       : {}
                   }
-                  title={item.label}
+                  title={isLocked ? `${item.label} (Staff Only)` : item.label}
                 >
                   {/* Subtle sheen highlight on hover */}
                   <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden">
@@ -186,14 +215,16 @@ export default function Sidebar({
 
                   {/* Icon with Zoom effect */}
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border-t shadow-sm transform transition-transform duration-200 ease-out group-hover:scale-110 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border-t shadow-sm transform transition-transform duration-200 ease-out group-hover:scale-110 relative ${
                       isActive
                         ? 'bg-white/20 backdrop-blur-md border-white/40 text-white'
+                        : isLocked
+                        ? 'bg-slate-200 text-slate-500 border-slate-300'
                         : `${item.iconBg} border-white/80 ${item.iconColor}`
                     }`}
                   >
                     <span className="material-symbols-outlined text-lg transition-transform duration-200 group-hover:scale-105">
-                      {item.icon}
+                      {isLocked ? 'lock' : item.icon}
                     </span>
                   </div>
 
@@ -202,13 +233,22 @@ export default function Sidebar({
                     className={`text-sm font-semibold truncate flex-1 md:hidden lg:inline transform transition-all duration-200 ${
                       isActive
                         ? 'text-white'
+                        : isLocked
+                        ? 'text-slate-500 group-hover:text-slate-700'
                         : 'text-text-primary group-hover:text-primary group-hover:translate-x-0.5'
                     }`}
                   >
                     {item.label}
                   </span>
 
-                  {isActive && (
+                  {/* Lock badge for locked modules */}
+                  {isLocked && (
+                    <span className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-slate-200 text-[9px] font-bold text-slate-600 uppercase tracking-wider shrink-0">
+                      Staff
+                    </span>
+                  )}
+
+                  {isActive && !isLocked && (
                     <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm md:hidden lg:inline shrink-0 transform transition-transform duration-200 group-hover:scale-125" />
                   )}
                 </button>
@@ -228,15 +268,15 @@ export default function Sidebar({
           }}
         >
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-xl">
-              verified_user
+            <span className={`material-symbols-outlined text-xl ${isCompany ? 'text-[#0B4EA2]' : 'text-primary'}`}>
+              {isCompany ? 'verified' : 'verified_user'}
             </span>
             <div className="flex flex-col md:hidden lg:flex">
               <span className="text-xs font-bold text-text-primary leading-tight">
-                System Active
+                {isCompany ? 'Company Access' : 'System Active'}
               </span>
               <span className="text-[10px] text-text-secondary leading-tight">
-                Academic Yr 2024-25
+                {isCompany ? 'Verified Corporate Partner' : 'Academic Yr 2024-25'}
               </span>
             </div>
           </div>
