@@ -1,9 +1,40 @@
 # 🛡️ ADMIN.md — RIMT University Institutional Placement & Operations Portal
 
 > **Single Source of Truth:** Master Memory, Architecture, Screens, Endpoints, and File Map for the entire RIMT Admin Portal & Integrated Student App.  
-> **Last Updated:** 2026-10-05  
+> **Last Updated:** 2026-10-20  
 > **Role:** Senior Full-Stack & System Logic Engineer Specification  
-> **Status:** Active; Talent Showcase live, fixed admin authorization active, LinkedIn profile tracker live, Cloudinary upload signing endpoint operational  
+> **Status:** Active; **Dual-Portal Auth (Admin + Company)** live, Role-Based Access Control enforced, **Zero-Irritation Refresh Animation Suppression** live (initial visit & login verification animation preserved, repeat browser reloads instantaneous), **Drive Management Overhaul** live (8-component suite, announcements, registration links, results, mobile push alerts, zero mock data), **Internship Opportunities & Live Monitoring Module Overhaul** live, Talent Showcase live, Cloudinary upload signing endpoint operational  
+
+---
+
+## ⚡ AGENT START HERE (Single-File Lookup Index)
+> **Rule:** Read ONLY this block first. Open only the files named here. For details use `grep -n <keyword> ADMIN.md`. Never scan folders or open files that are not listed.
+> **Maintenance:** Every change ends with an update to Section 3 (file tree), Section 10 (feature table), Section 11 (changelog) and the matching row of this table.
+
+| To Change / Task | Exact File(s) | Key Identifiers / Classes / Exports |
+|---|---|---|
+| **Session Loader & Refresh Guard** | `src/components/common/SessionLoader.jsx`, `src/styles/globals.css`, `src/app/layout.jsx`, `src/components/auth/AuthGuard.jsx` | `MIN_LOADER_MS (1900)`, `FADE_MS (300)`, `rimt_loader_seen`, `data-rimt-loader="seen"`, `.rimt-loader`, `SessionLoader`, instant refresh hydration |
+| **App Shell & Preloads** | `src/app/layout.jsx`, `src/app/loading.jsx` | `RootLayout`, `<link rel="preload" href="/rimt-logo.png">`, `Loading()` |
+| **Authentication & Gate** | `src/components/auth/AuthGuard.jsx`, `src/components/auth/AuthScreen.jsx` | `AuthGuard`, `AuthScreen`, `sessionReady`, `minElapsed`, `isSameAdminAccount` |
+| **Auth API & Endpoints** | `src/app/api/admin/auth/*`, `src/app/api/company/auth/*`, `src/lib/authApi.js` | `login/route.js`, `logout/route.js`, `me/route.js`, `withAuth` |
+| **Drive Management Suite** | `src/views/DriveManagement.jsx`, `src/components/drive/*`, `src/lib/driveClient.js`, `src/lib/driveUtils.js`, `drive.md` | `DriveManagement`, `DriveFormModal`, `DriveDetailDrawer`, `AnnouncementsPanel`, `RegistrationLinksPanel`, `ResultsPanel`, `NotifyConfirmModal`, `StatusBadges` |
+| **Database & Adapter** | `src/lib/db.js`, `src/lib/supabaseClient.js` | `getStudents`, `updateStudentDossier`, `getInternshipOpportunities`, Supabase client |
+| **Navigation & Layout** | `src/components/Sidebar.jsx`, `src/components/Header.jsx`, `src/app/page.jsx` | `Sidebar`, `Header`, `companyAllowedModules`, `activeTab` |
+| **Onboarding Approvals** | `src/views/OnboardingApprovals.jsx`, `src/app/api/admin/requests/[id]/*` | `OnboardingApprovals`, `approve/route.js`, `reject/route.js`, `revoke/route.js` |
+| **Student Management** | `src/views/StudentManagement.jsx`, `src/components/student/StudentDossierModal.jsx` | `StudentManagement`, `StudentDossierModal`, academic metrics editor |
+| **Scholar Dossier Modal** | `src/components/student/StudentLinkedInProfileModal.jsx` | `StudentLinkedInProfileModal`, LinkedIn-style layout, documents vault |
+| **Talent Showcase** | `src/views/CompanyManagement.jsx`, `src/components/student/TalentProfileModal.jsx` | `CompanyManagement` (Talent Showcase), `TalentProfileModal`, recruiter view |
+| **Placement Analytics** | `src/views/PlacementAnalytics.jsx`, `src/lib/placementStats.js` | `PlacementAnalytics`, `getPlacementSummary`, KPI cards, department charts |
+| **Placed Students** | `src/components/placement/PlacedStudentsCard.jsx`, `src/components/common/CompanyBrandLogo.jsx` | `PlacedStudentsCard`, `CompanyBrandLogo`, `getProfessionBadge` |
+| **Hiring Companies** | `src/components/placement/HiringCompaniesSection.jsx` | `HiringCompaniesSection`, partner SVG logos, package benchmarks |
+| **Internship Opportunities** | `src/views/InternshipMonitoring.jsx`, `src/components/internship/OpportunityCard.jsx` | `InternshipMonitoring`, `OpportunityCard`, `OpportunityFormModal`, compensation bounds |
+| **Internship Validation** | `src/lib/internshipValidation.js`, `src/app/api/admin/internship-opportunities/*` | `validateOpportunity`, mutual exclusivity (stipend vs paid vs non_stipend) |
+| **Company Recruiter Portal** | `src/app/company/page.jsx`, `src/app/company/auth/page.jsx` | `CompanyLockedModuleView`, `initialPortalType="company"` |
+| **Resume Builder Suite (CVForge)** | `RESUMEE.md`, `APP-RIMT-BCA/src/screens/ResumeScreen.jsx` | 4 templates (`navy_ledger`, `richard_sanchez`, `herman_walton`, `sunny_singh`), direct Intent PDF |
+| **Cloudinary Media Sign** | `src/app/api/cloudinary/sign/route.js` | `sign/route.js`, SHA-1 signature generator, folder security validation |
+| **Design Tokens & Styles** | `src/styles/globals.css`, `tailwind.config.js`, `src/constants/tokens.js` | Maroon `#6B0018`, Gold `#E7B94A`, Desert `#FAF6F0`, custom scrollbars |
+| **Reusable UI Primitives** | `src/components/Modal.jsx`, `src/components/FilterPills.jsx`, `src/components/KpiCard.jsx`, `src/components/HeroCard.jsx` | Accessible dialogs, filter chips, glossy KPI metric displays |
+
 
 ---
 
@@ -54,92 +85,142 @@ A core architectural pillar is the **Gated Student Onboarding System & Administr
 ```
 c:\Users\r3dha\ADMIN-PANEL-RIMT\
 ├── ADMIN.md                      # ⭐ THE SINGLE MASTER MEMORY FILE (This Document)
-├── FULL-APP.md                   # Full application context document
+├── AGENTS.md                     # Agent development rules and operational boundaries
+├── CLAUDE.md                     # Architecture and command guidelines for Anthropic Claude
+├── drive.md                      # ⭐ Comprehensive frontend specification for Drive Management module
+├── FULL-APP.md                   # Full cross-application context and integration documentation
 ├── NEW-FEATURE.md                # Feature specification & DoD for Admin Panel Authentication
-├── CONTEXT (1).md                # Project context reference
-├── README.md                     # High-level repository readme
+├── README.md                     # High-level repository overview and quickstart guide
+├── RESUMEE.md                    # ⭐ CVForge AI Resume Builder specification and mobile app sync context
 ├── jsconfig.json                 # Path aliases mapping: "@/*" -> "./src/*"
-├── next.config.js                # Next.js configuration (reactStrictMode, images unoptimized)
-├── package.json                  # Next.js 16.3.8, React 18.3.1, Lucide-React, Tailwind, @supabase/supabase-js
+├── next.config.js                # Next.js configuration (reactStrictMode: true, images: { unoptimized: true })
+├── package.json                  # Next.js 16.3.8, React 18.3.1, Lucide-React, Tailwind 3.4.19, @supabase/supabase-js
 ├── package-lock.json             # Locked dependency tree
-├── postcss.config.js             # PostCSS Tailwind processor
-├── tailwind.config.js            # Design tokens, color system, container queries, desert theme
+├── postcss.config.js             # PostCSS Tailwind and Autoprefixer processor
+├── tailwind.config.js            # Design tokens, color system, container queries, desert surfaces, keyframes
 ├── .env                          # Supabase URL/Key + Cloudinary credentials (CLOUDINARY_CLOUD_NAME, API_KEY, API_SECRET)
-├── .env.example                  # Cloudinary config template (server-only secrets)
-├── .env.local                    # Supabase URL + Key override
+├── .env.example                  # Cloudinary configuration template (server-only secrets documentation)
+├── .env.local                    # Local development Supabase URL + Key override
+├── .gitignore                    # Git exclusions: node_modules, .next, out, logs, local envs
+│
+├── public/                       # Static Assets & Font Files
+│   ├── campus-banner.jpg         # Campus hero photography banner for auth and portal headers
+│   ├── default-avatar.jpg        # Default student avatar fallback (JPEG format)
+│   ├── default-avatar.png        # Default student avatar fallback (PNG format)
+│   ├── rimt-logo.png             # Official high-resolution RIMT University institutional logo (SessionLoader & brand cards)
+│   └── fonts/                    # Self-hosted Material Symbols font files
+│       ├── material-symbols-outlined.woff2 # Primary WOFF2 webfont for high-performance glyph rendering
+│       └── material-symbols-outlined.ttf   # TTF fallback font file
 │
 ├── src/
-│   ├── app/                      # Next.js App Router
-│   │   ├── layout.jsx            # Universal root layout, HTML shell, Material Symbols font preloading
-│   │   ├── page.jsx              # Main Single-Page Admin Shell orchestrating active module views & AuthGuard
+│   ├── app/                      # Next.js App Router Shell & Routes
+│   │   ├── layout.jsx            # Universal root layout, HTML shell, preloads, session-seen inline script
+│   │   ├── loading.jsx           # Root loading boundary rendering <SessionLoader />
+│   │   ├── page.jsx              # ⭐ Main Single-Page Admin Shell (CompanyLockedModuleView, AuthGuard, role-based module renderer)
 │   │   ├── admin/
+│   │   │   ├── page.jsx          # Dedicated /admin route (renders AdminPortalDashboard in AuthGuard with initialPortalType="admin")
 │   │   │   └── auth/
 │   │   │       └── page.jsx      # Standalone /admin/auth route page
+│   │   ├── company/              # ⭐ Corporate Recruiter Portal Routes
+│   │   │   ├── page.jsx          # /company — Dedicated company dashboard (AuthGuard with initialPortalType="company")
+│   │   │   └── auth/
+│   │   │       └── page.jsx      # /company/auth — Standalone corporate recruiter registration and login screen
 │   │   └── api/                  # Backend REST Route Handlers
-│   │       ├── auth/
-│   │       │   ├── signup/route.js # POST: 4-field registration (Name, Roll No, Dept, Year) -> status: PENDING (no token)
-│   │       │   └── login/route.js  # POST: Gated roll number check (403 PENDING/REJECTED, 200 APPROVED)
-│   │       ├── admin/
-│   │       │   ├── auth/
+│   │       ├── auth/             # Public Student Auth Endpoints
+│   │       │   ├── signup/route.js # POST: 4-field student signup (Name, Roll No, Dept, Batch) -> status: PENDING
+│   │       │   └── login/route.js  # POST: Gated roll number authentication (403 PENDING/REJECTED, 200 APPROVED)
+│   │       ├── admin/            # Institutional Admin Endpoints
+│   │       │   ├── auth/         # Fixed Admin Account Authentication
 │   │       │   │   ├── signup/route.js         # POST: ⛔ DISABLED — always returns 403 SIGNUP_DISABLED
-│   │       │   │   ├── login/route.js          # POST: Fixed admin credential auth (Raj Kumar / Sagrika only) + httpOnly session cookie
+│   │       │   │   ├── login/route.js          # POST: Fixed admin credential auth (Raj Kumar / Sagrika only) + httpOnly cookie
 │   │       │   │   ├── logout/route.js         # POST: Clear admin session cookie
 │   │       │   │   ├── me/route.js             # GET: Active admin identity & verified privileges
 │   │       │   │   ├── profile-pic/route.js    # POST: Admin avatar upload/update (multipart/json)
 │   │       │   │   ├── change-password/route.js# PATCH: Verify current password & set new password
 │   │       │   │   └── check-email/route.js    # POST: Pre-check if Gmail address already exists
 │   │       │   ├── internships/
-│   │       │   │   └── route.js        # GET: List all student internships for InternshipMonitoring
-│   │       │   └── requests/
-│   │       │       ├── route.js    # GET: Queued student applications (?status=PENDING)
+│   │       │   │   └── route.js        # GET: List all student internships across student dossiers for InternshipMonitoring
+│   │       │   ├── internship-opportunities/  # ⭐ INTERNSHIP OPPORTUNITY CRUD & SEARCH ENDPOINTS
+│   │       │   │   ├── route.js        # GET: Multi-filter search; POST: Admin create opportunity (mutual exclusivity, audit log)
+│   │       │   │   └── [id]/
+│   │       │   │       └── route.js    # GET: Single record; PATCH: Update/toggle visibility; DELETE: Remove record
+│   │       │   └── requests/       # Gated Student Review & Dossier Management
+│   │       │       ├── route.js    # GET: Queued student applications (?status=PENDING or ?status=ALL)
 │   │       │       └── [id]/
-│   │       │           ├── route.js         # GET: Single student application details & full dossier; PATCH: Update profile/dossier/academic metrics with audit trail
-│   │       │           ├── approve/route.js # PATCH: Approve student -> status: APPROVED
-│   │       │           ├── reject/route.js  # PATCH: Reject student -> status: REJECTED + reason
-│   │       │           └── revoke/route.js  # PATCH: Revoke student access -> status: REVOKED
+│   │       │           ├── route.js         # GET: Single student dossier; PATCH: Update profile/dossier/academic metrics
+│   │       │           ├── approve/route.js # PATCH: Approve student registration
+│   │       │           ├── reject/route.js  # PATCH: Reject student registration with reason
+│   │       │           └── revoke/route.js  # PATCH: Revoke student access with recorded reason
+│   │       ├── company/          # Corporate Recruiter Auth Endpoints
+│   │       │   ├── auth/
+│   │       │   │   ├── register/route.js     # POST: Company registration (email/password) → JWT + httpOnly cookie
+│   │       │   │   ├── login/route.js        # POST: Company sign-in (email/password) → JWT + httpOnly cookie
+│   │       │   │   ├── google/route.js       # POST: Google OAuth — auto-registers new company if first-time
+│   │       │   │   ├── me/route.js           # GET: Active company recruiter identity (withAuth requiredRole='COMPANY')
+│   │       │   │   └── logout/route.js       # POST: Clear company_token cookie
+│   │       │   └── upload-logo/
+│   │       │       └── route.js    # POST: Upload corporate partner vector/raster logo
 │   │       ├── cloudinary/
 │   │       │   └── sign/
 │   │       │       └── route.js    # POST: Cloudinary upload signature generator (SHA-1); OPTIONS: CORS preflight
+│   │       ├── placement-stats/  # Live Placement Analytics Endpoints
+│   │       │   ├── summary/route.js          # GET: Placement summary KPIs (highest, average, median, total placed)
+│   │       │   ├── trend/route.js            # GET: Historical multi-year placement rate and package trends
+│   │       │   ├── departments/route.js      # GET: Department-wise placement distribution and breakdown
+│   │       │   ├── companies/route.js        # GET: Recruiting partners and package tier catalog
+│   │       │   └── placed-students/route.js  # GET: Verified placed students with profession badges and corporate logos
 │   │       └── profile/
 │   │           └── route.js      # GET/PUT: Gated student profile editor (APPROVED users only)
 │   │
-│   ├── lib/                      # Core Backend Utilities & Security Guards
-│   │   ├── auth.js               # Web Crypto PBKDF2 password hashing & HMAC-SHA256 JWT
-│   │   ├── authApi.js            # Client-side API client for admin auth endpoints
-│   │   ├── db.js                 # Supabase adapter, student/admin records, dossier CRUD, and memory fallback
-│   │   ├── middleware.js         # withAuth route guard enforcing admin & student role and status checks
-│   │   ├── schema.sql            # PostgreSQL schema definition with students and admins tables
-│   │   ├── supabaseClient.js     # Shared Supabase client for realtime subscriptions (eventsPerSecond: 10)
-│   │   └── enable_realtime.sql   # SQL to enable realtime publication on dossier tables
-│   │
-│   ├── components/               # Admin UI Shell Components
+│   ├── components/               # Admin UI Shell Components & Specialized Sub-modules
+│   │   ├── FilterPills.jsx       # Reusable filterable pill-style toggle buttons
 │   │   ├── Header.jsx            # Top bar: Dynamic admin avatar, search query, notifications
-│   │   ├── Sidebar.jsx           # 3-state responsive drawer with Onboarding Approvals badge count; "Talent Showcase" replaces "Company Management" sidebar entry
-│   │   ├── Modal.jsx             # Accessible backdrop dialog wrapper for reviews & actions
-│   │   ├── FilterPills.jsx       # Filterable pill-style toggle buttons
 │   │   ├── HeroCard.jsx          # Decorative hero banner card component
-│   │   ├── KpiCard.jsx           # KPI metric display card with icon and trend
-│   │   ├── auth/
-│   │   │   ├── AuthScreen.jsx    # Sign In only (no signup) with warm desert theme & fixed admin credentials
-│   │   │   └── AuthGuard.jsx     # Route protection wrapper preventing unauthenticated dashboard access
-│   │   ├── profile/
-│   │   │   ├── ProfileMenu.jsx   # Header avatar dropdown menu (Profile, Change Password, Sign Out)
-│   │   │   └── ProfileModal.jsx  # Modal for photo upload & password management
-│   │   └── student/
-│   │       ├── StudentLinkedInProfileModal.jsx  # ⭐ LinkedIn-Style Scholar Dossier view (2936 lines) with Cloudinary document upload
+│   │   ├── KpiCard.jsx           # KPI metric display card with icon, gradient, and trend
+│   │   ├── Modal.jsx             # Accessible backdrop dialog wrapper for reviews & actions
+│   │   ├── Sidebar.jsx           # ⭐ 3-state responsive drawer with role-based module locking & company isolation
+│   │   │
+│   │   ├── auth/                 # Authentication Gateway Components
+│   │   │   ├── AuthGuard.jsx     # ⭐ Route protection wrapper with multi-account session isolation & instant refresh hydration
+│   │   │   └── AuthScreen.jsx    # ⭐ Dual-Portal gateway: Institutional Admin + Company Portal switcher, Gmail-style account chooser
+│   │   │
+│   │   ├── common/               # Shared Institutional UI Primitives
+│   │   │   ├── CompanyBrandLogo.jsx  # ⭐ Self-contained SVG vector brand logos (Google, Microsoft, AWS, Deloitte, HDFC, TCS, L&T, Infosys, Wipro)
+│   │   │   └── SessionLoader.jsx     # Institutional branded session loader with concentric CSS stage, logoElasticCycle & sheen
+│   │   │
+│   │   ├── drive/                # ⭐ DRIVE MANAGEMENT MODULE COMPONENTS
+│   │   │   ├── AnnouncementsPanel.jsx    # Broadcast announcements, schedule changes, and mobile push notification delivery
+│   │   │   ├── DriveCard.jsx             # Drive summary card with package, batch, registered count, status badge & action menu
+│   │   │   ├── DriveDetailDrawer.jsx     # Slide-over inspection drawer for drive rounds, links, announcements & results
+│   │   │   ├── DriveFormModal.jsx        # 821-line modal for drive creation & editing with rounds, dates, eligibility & packages
+│   │   │   ├── NotifyConfirmModal.jsx    # Pre-broadcast confirmation modal ensuring staff verify mobile notification content
+│   │   │   ├── RegistrationLinksPanel.jsx# External & internal registration link management with copy link, deadline & status
+│   │   │   ├── ResultsPanel.jsx          # Round-by-round results roster, selected/shortlisted student lists & package offers
+│   │   │   └── StatusBadges.jsx          # Color-coded drive status badges (Upcoming, Active, In Progress, Completed, Cancelled)
+│   │   │
+│   │   ├── internship/           # INTERNSHIP MONITORING & OPPORTUNITY MODULE COMPONENTS
+│   │   │   ├── OpportunityCard.jsx       # Card displaying opportunity details, stipend/paid badge, skills, status toggle, hover zoom
+│   │   │   ├── OpportunityFormModal.jsx  # Creation/editing modal with real-time validation, duration slider, stipend exclusivity
+│   │   │   ├── InternshipFilters.jsx     # Full-width horizontal filter toolbar (compensation, season, duration, skills, search, sort)
+│   │   │   └── StudentInternshipCard.jsx # Live student internship monitoring card with dossier inspection
+│   │   │
+│   │   ├── placement/            # PLACEMENT ANALYTICS COMPONENTS
+│   │   │   ├── PlacedStudentsCard.jsx    # ⭐ Placed students card with profession badges (getProfessionBadge), CompanyBrandLogo, tier-based styling
+│   │   │   └── HiringCompaniesSection.jsx# ⭐ Hiring companies section with official SVG logos & clickable Google Maps location links
+│   │   │
+│   │   ├── profile/              # ADMIN PROFILE & SESSION MANAGEMENT
+│   │   │   ├── AddAccountModal.jsx       # Full-page add account modal for multi-account Gmail-style sign-in
+│   │   │   ├── ProfileMenu.jsx           # Header avatar dropdown menu (Profile, Change Password, Sign Out) with multi-account switcher
+│   │   │   └── ProfileModal.jsx          # Modal for photo upload & password management
+│   │   │
+│   │   └── student/              # STUDENT DOSSIER & PORTFOLIO COMPONENTS
 │   │       ├── StudentDossierModal.jsx          # ⭐ Full Admin-Managed Student Dossier (7 tabs: Overview, Projects, Git, Certs, Internships, Academics, Audit)
-│   │       └── TalentProfileModal.jsx           # ⭐ NEW: Read-only student portfolio viewer for corporate recruiters (Talent Showcase)
+│   │       ├── StudentLinkedInProfileModal.jsx  # ⭐ LinkedIn-Style Scholar Dossier view (2936 lines) with Cloudinary document upload
+│   │       └── TalentProfileModal.jsx           # ⭐ Read-only student portfolio viewer for corporate recruiters (Talent Showcase)
 │   │
-│   ├── views/                    # Primary Admin Functional Screens
-│   │   ├── OnboardingApprovals.jsx # ⭐ Gated student approval queue, review drawer, reject modal
-│   │   ├── StudentManagement.jsx # Verified student directory, CGPA/Attendance columns, "Open Dossier" button
-│   │   ├── CompanyManagement.jsx # ⭐ RENAMED: "Talent Showcase" — approved student portfolio gallery with profile strength scoring, recruiter-facing card grid, and TalentProfileModal
-│   │   ├── DriveManagement.jsx   # Upcoming and active campus drives
-│   │   ├── PlacementStatistics.jsx # Real-time placement metrics and department charts
-│   │   ├── TrainingManagement.jsx # Pre-placement training schedule and rosters
-│   │   ├── InternshipMonitoring.jsx # Student industrial internship tracking
-│   │   ├── ReportGeneration.jsx  # Exportable reports
-│   │   └── ProfileTab.jsx        # Admin profile information & security settings
+│   ├── constants/                # Project Constants & Registries
+│   │   ├── data.js               # Clean data schemas and constant templates
+│   │   └── tokens.js             # Institutional color palette, spacing, typography, and module registry definitions
 │   │
 │   ├── expo/                     # Expo/Mobile Admin Portal Navigator (embedded module)
 │   │   ├── AdminPortalNavigator.jsx # Mobile admin portal navigation component
@@ -153,30 +234,46 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
 │   │       ├── StudentManagementScreen.jsx
 │   │       └── TrainingManagementScreen.jsx
 │   │
-│   ├── constants/                # Data and Design Constants
-│   │   ├── data.js               # Mock data for drives, student records, and training modules
-│   │   └── tokens.js             # Color palette, spacing, and typography definitions
+│   ├── lib/                      # Core Backend Utilities, Security Guards & Database Adapters
+│   │   ├── auth.js               # Web Crypto PBKDF2 password hashing & HMAC-SHA256 JWT
+│   │   ├── authApi.js            # Client-side API client for admin + company auth endpoints
+│   │   ├── db.js                 # ⭐ Supabase adapter, student/admin/company records, dossier CRUD, company CRUD, internship CRUD, memory fallback
+│   │   ├── driveClient.js        # ⭐ Drive Management API client (fetch drives, create, update, delete, broadcast notifications)
+│   │   ├── driveUtils.js         # ⭐ Drive utilities (currency formatters, date math, eligibility checkers, status resolvers)
+│   │   ├── enable_realtime.sql   # SQL to enable realtime publication on dossier tables
+│   │   ├── internshipValidation.js # Canonical validation engine (mutual exclusivity, duration bounds, season checks, skill normalization)
+│   │   ├── middleware.js         # withAuth route guard enforcing admin, company & student role/status checks with getCompanyById lookup
+│   │   ├── placementStats.js     # Live placement statistics, student-company matching, profession badges, package benchmarks
+│   │   ├── schema.sql            # PostgreSQL schema definition with students and admins tables
+│   │   └── supabaseClient.js     # Shared Supabase client for realtime subscriptions (eventsPerSecond: 10)
 │   │
-│   └── styles/
-│       └── globals.css           # Global CSS, custom animations, Material Symbols font-face
-│
-├── public/
-│   ├── default-avatar.jpg        # Default student avatar fallback (JPEG)
-│   ├── default-avatar.png        # Default student avatar fallback (PNG)
-│   └── fonts/                    # Self-hosted Material Symbols fonts
-│       ├── material-symbols-outlined.woff2
-│       └── material-symbols-outlined.ttf
+│   ├── styles/
+│   │   └── globals.css           # Global CSS, custom animations, Material Symbols font-face, session loader CSS suppression
+│   │
+│   └── views/                    # Primary Admin Functional Screens
+│       ├── CompanyManagement.jsx # ⭐ "Talent Showcase" — approved student portfolio gallery with profile strength scoring & recruiter grid
+│       ├── DriveManagement.jsx   # ⭐ OVERHAULED: Drive operations suite (Announcements, Registration Links, Results, Rounds, Notifications)
+│       ├── InternshipMonitoring.jsx # ⭐ Live dual-tab layout (Opportunities vs Live Student Internships), full CRUD, responsive filters
+│       ├── OnboardingApprovals.jsx # ⭐ Gated student approval queue, review drawer, reject modal
+│       ├── PlacementStatistics.jsx # Real-time placement metrics, department charts, placed students card with profession badges
+│       ├── ProfileTab.jsx        # Admin profile information & security settings
+│       ├── ReportGeneration.jsx  # Exportable compliance reports in CSV and PDF formats
+│       ├── StudentManagement.jsx # Verified student directory, CGPA/Attendance columns, "Open Dossier" button
+│       └── TrainingManagement.jsx# Pre-placement training schedule, syllabus, and student rosters
 │
 ├── supabase/
-│   └── migrations/
+│   └── migrations/               # PostgreSQL Database Migrations
 │       ├── 20260930_fixed_admin_accounts.sql             # Fixed admin accounts (Raj Kumar, Sagrika) with PBKDF2 hashed passwords
 │       ├── 20260930_add_student_bio_and_academic_score.sql # Student bio, headline, cgpa, academic_score, banner_url, projects, skills, semester_scores
-│       └── 20260930_admin_student_dossier.sql             # Unified Student Dossier, 9 tables, RLS policies, manual-only academic summary, private certificate bucket
+│       ├── 20260930_admin_student_dossier.sql             # Unified Student Dossier, 9 tables, RLS policies, manual-only academic summary, private certificate bucket
+│       └── 20261018_internship_opportunities.sql         # Internship opportunities table, mutual exclusivity constraints, RLS policies
 │
-└── tests/
-    ├── onboarding.test.mjs       # Automated unit test suite verifying approval state transitions (21/21)
+└── tests/                        # Automated Unit & Integration Test Suites
     ├── admin-auth.test.mjs       # Automated unit test suite verifying admin authentication & session lifecycle (18/18)
-    └── dossier-academic.test.mjs # Automated unit test suite verifying dossier CRUD & academic manual control (26/26)
+    ├── company-auth.test.mjs     # Automated unit test suite verifying corporate recruiter authentication & role gating (24/24)
+    ├── dossier-academic.test.mjs # Automated unit test suite verifying dossier CRUD & academic manual control (26/26)
+    ├── internship-opportunities.test.mjs # Automated unit test suite verifying opportunity validation & mutual exclusivity (57/57)
+    └── onboarding.test.mjs       # Automated unit test suite verifying approval state transitions (21/21)
 ```
 
 ---
@@ -222,33 +319,151 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
   - **TalentProfileModal:** Read-only full-screen student portfolio viewer (`src/components/student/TalentProfileModal.jsx`) showing About section, Tech Stack & Skills, Featured Projects, Certificates, Internships, and profile strength gauge. Designed for recruiter consumption — no admin editing capabilities.
   - **Search:** Full-text search by name, roll number, department, headline, or skill name.
 
-### 4.4 Drive Management (`src/views/DriveManagement.jsx`)
-- **Purpose:** Placement drive scheduling and applicant tracking.
-- **Features:**
-  - Drive dates, job descriptions, compensation breakdown, and eligibility criteria.
-  - Registered applicant list and shortlisted student counters.
+### 4.4 Drive Management (`src/views/DriveManagement.jsx` & `src/components/drive/*`)
+- **Purpose:** Enterprise placement drive operations suite enabling university staff to author, schedule, publish, and manage corporate & campus recruitment drives, registration links, real-time broadcasts/announcements, round-by-round selection results, and student mobile push alerts.
+- **Source Specification Document:** `drive.md` (645 lines — complete revision 2 spec with zero-mock governance).
+- **Core Sub-Components (`src/components/drive/`):**
+  1. **`DriveFormModal.jsx` (821 lines):**
+     - Full creation & editing modal for campus placement drives.
+     - Basic Info: Company name, job role, drive category (Campus Drive, Off-Campus, Pool Campus, Virtual), target department multi-select (BCA, B.Sc IT, B.Sc Cyber Security, B.Sc AI & ML), target batch year.
+     - Compensation Breakdown: CTC / package in LPA (base, variable, perks), stipend during probation, tier badge auto-resolution (Super Dream ≥15 LPA, Dream ≥10 LPA, Standard 1 ≥6 LPA, Entry).
+     - Eligibility Engine: Minimum CGPA, maximum active backlogs, 10th & 12th percentage thresholds, required skills list with interactive tag input.
+     - Multi-Round Pipeline: Configurable interview rounds (Aptitude Test, Technical Interview 1, Technical Interview 2, HR Round, Group Discussion, Managerial Round) with dates, venues, and round descriptions.
+  2. **`DriveDetailDrawer.jsx` (467 lines):**
+     - Slide-over comprehensive drive inspection drawer.
+     - Displays full drive dossier, eligibility checklist, package breakdown, rounds status timeline, active registration links, published announcements, and selection results.
+     - Staff quick-action controls: Edit Drive, Publish/Unpublish, Status Transition (Upcoming → Active → In Progress → Completed → Cancelled), and Trigger Mobile Notification.
+  3. **`DriveCard.jsx` (235 lines):**
+     - High-density summary card for drive listings.
+     - Displays company logo/monogram, role title, package tier badge, eligibility criteria pill (Min CGPA), batch year, drive date/timeline, registered applicants counter, and shortlisted count.
+     - Interactive kebab action menu: View Details, Edit Drive, Manage Registration Links, View Results, Broadcast Update.
+  4. **`AnnouncementsPanel.jsx` (282 lines):**
+     - Dedicated drive announcements management panel.
+     - Staff can publish urgent schedule changes, venue updates, shortlisted roll numbers, and round guidelines.
+     - Push notification integration: Broadcasts instantly to all students with the `APP-RIMT-BCA` student app installed.
+  5. **`RegistrationLinksPanel.jsx` (325 lines):**
+     - Manages both external company portal application URLs and internal RIMT registration forms.
+     - Copy-to-clipboard 1-click action, application deadline countdown, registration instructions, and status indicator (Open, Closing Soon, Closed).
+  6. **`ResultsPanel.jsx` (406 lines):**
+     - Round-by-round selection results and offer letters manager.
+     - Roster of shortlisted and final selected students with roll numbers, names, departments, and offered packages.
+     - Instant result publication with automatic sync to student app and Placement Statistics.
+  7. **`StatusBadges.jsx` (169 lines):**
+     - Standardized institutional status badges: `Upcoming` (blue), `Active` (emerald), `In Progress` (amber), `Completed` (indigo), `Cancelled` (rose).
+  8. **`NotifyConfirmModal.jsx` (195 lines):**
+     - Pre-broadcast verification modal preventing accidental notifications to mobile students.
+     - Previews student push notification title, body, and audience size with confirmation safeguards.
+- **Client & Utilities Layer:**
+  - **`src/lib/driveClient.js` (405 lines):** API client providing `getDrives()`, `getDriveById()`, `createDrive()`, `updateDrive()`, `deleteDrive()`, `broadcastDriveAnnouncement()`, `updateDriveResults()`.
+  - **`src/lib/driveUtils.js` (401 lines):** Currency formatters (`formatLPA`), deadline calculations, eligibility matching against student records, round status resolvers.
+- **Real-Data Governance:** All synthetic placeholder numbers (e.g., hardcoded 14 active drives, 684 offers, 48 companies, ₹34.5 LPA, TCS dummy hero) are permanently eliminated. Clean zero-state with institutional "Schedule First Placement Drive" CTA.
 
 ### 4.5 Placement Statistics (`src/views/PlacementStatistics.jsx`)
-- **Purpose:** Institutional analytics dashboard.
+- **Purpose:** Institutional analytics dashboard with live student placement and corporate hiring data.
 - **Features:**
   - Placement percentage by department.
   - Highest, median, and average package (LPA) benchmarks.
   - Visual charts and historical comparison trends.
+  - **Placed Students & Corporate Offers Card** (`src/components/placement/PlacedStudentsCard.jsx`):
+    - Lists all approved students paired with hiring companies from `src/lib/placementStats.js`.
+    - **Student Profession Badge:** Each student displays a color-coded profession pill with matching icon (🛡 Cyber Security → emerald, ☁ Cloud DevOps → sky, 💻 Developer → indigo, 📊 Risk Analyst → amber, 🏦 FinTech → teal, 🎶 Music/Singing → purple, 💃 Dance → pink) via `getProfessionBadge()`.
+    - **Official Company Brand Logos:** Uses `CompanyBrandLogo` SVG vectors (Google, Microsoft, AWS, Deloitte, HDFC, TCS) instead of external image URLs — immune to CORS/403 errors.
+    - **Tier Badges:** Packages color-coded by tier: Super Dream (≥15 LPA), Dream (≥10 LPA), Standard 1 (≥6 LPA), Entry.
+  - **Hiring Companies Section** (`src/components/placement/HiringCompaniesSection.jsx`):
+    - Displays the 6 HIRING_COMPANIES_CATALOG entries with official SVG logos via `CompanyBrandLogo`.
+    - Location badges link to Google Maps search for the company address.
+    - Shows SPOC contact, MoU status, package range, and sector info.
 
 ### 4.6 Training Management (`src/views/TrainingManagement.jsx`)
 - **Purpose:** Pre-placement soft-skills and technical training bootcamps.
 - **Features:**
   - Training modules, schedule calendar, and student attendance tracking.
 
-### 4.7 Internship Monitoring (`src/views/InternshipMonitoring.jsx`)
-- **Purpose:** 6-month industrial internship tracking.
-- **Features:**
-  - Assigned mentor faculty, mid-term evaluations, and compliance reports.
+### 4.7 Internship Monitoring & Opportunities (`src/views/InternshipMonitoring.jsx`)
+- **Purpose:** Comprehensive institutional internship management featuring corporate opportunity curation, multi-filter discovery, role-gated admin authoring, and real-time student industrial internship monitoring.
+- **Architecture & Features:**
+  - **Dual-Tab Operational Interface:**
+    - **Internship Opportunities Tab:** Admin-managed catalog of corporate internship openings. Starts strictly clean at 0 (zero hardcoded mock rows). Real-time Supabase synchronization.
+    - **Live Student Internships Tab:** Live feed of assigned student industrial internships aggregated across verified student dossiers, with faculty mentor tracking and mid-term evaluation states.
+  - **Full-Width Responsive Filter Toolbar (`InternshipFilters.jsx`):**
+    - Search across roles, companies, required skills, and locations.
+    - Dropdowns for Company, Department, Opportunity Status, and Sort criteria.
+    - Full-width horizontal chip bar displaying **Compensation** (All Comp, Stipend, Non-Stipend, Paid), **Season** (All Seasons, Winter, Summer, Spring, Autumn), and **Duration** (All, 3 Mo, 6 Mo, 9 Mo, 12 Mo, Other) side-by-side with subtle dividers and smooth interactive hover-zoom scaling (`hover:scale-105 active:scale-95`).
+    - Dynamic skills filter chips derived from active opportunity requirements with local search filter and expandable toggle.
+    - Grid view vs List view layout toggle with local preferences.
+  - **Opportunity Cards (`OpportunityCard.jsx`):**
+    - Company monogram/logo, role title, department tags, duration, season badge, and compensation pill.
+    - Currency formatting in INR with Indian numeric grouping (e.g. ₹25,000 / month).
+    - Real-time visibility toggle (`is_visible`), Edit modal trigger, and delete confirmation dialog with audit logging.
+    - Micro-zoom hover animation (`hover:scale-[1.01] transition-all`).
+  - **Opportunity Creation & Editing Modal (`OpportunityFormModal.jsx`):**
+    - Live form validation via shared engine `internshipValidation.js`.
+    - Strict mutual exclusivity between Stipend (`stipend_amount > 0` and `fee_amount = null`) and Paid (`fee_amount > 0` and `stipend_amount = null`).
+    - Duration slider with standard semester presets (3, 6, 9, 12 months) and custom input bounds (1–24 months).
+    - Academic season picker, department multi-select, and interactive skill tagger with backspace removal.
+  - **Live Student Internship Cards (`StudentInternshipCard.jsx`):**
+    - Displays scholar identity, roll number, department, corporate host, stipend, status, and faculty mentor.
+    - Direct "Inspect Dossier" CTA opening the full LinkedIn-Style Scholar Dossier modal.
+  - **Security & Audit Governance:**
+    - Role-based route guard strictly blocks `COMPANY` role recruiters from admin write endpoints (`FORBIDDEN_ROLE`).
+    - All CRUD mutations are permanently recorded in `admin_audit_log` with actor ID and data diffs.
 
 ### 4.8 Report Generation (`src/views/ReportGeneration.jsx`)
 - **Purpose:** Institutional reporting for NAAC, NIRF, and AICTE compliance.
 - **Features:**
   - Export placement reports in CSV and PDF formats.
+
+### 4.9 Institutional Branded Session Loader & Refresh Suppression Architecture
+- **Login Animation Source File:** `src/components/auth/AuthGuard.jsx:296` (`SplashVerificationScreen`).
+- **Implementation Files:**
+  - `src/components/common/SessionLoader.jsx` (server-renderable shell, layers, exported timing constants)
+  - `src/styles/globals.css` (`.rimt-loader`, `.rimt-loader__card`, `.rimt-loader__sheen`, keyframes, refresh quiet-mode suppression)
+  - `src/components/auth/AuthGuard.jsx` (session check, single mount clock, seamless under-overlay mount, instant refresh hydration)
+  - `src/app/loading.jsx` (Next.js root suspense boundary rendering `<SessionLoader />`)
+  - `src/app/layout.jsx` (`<link rel="preload" href="/rimt-logo.png" as="image">`, session-seen inline `<head>` script)
+  - `public/rimt-logo.png` (56x56 institutional logo)
+- **Zero-Irritation Refresh Suppression Architecture (2026-10-20):**
+  - **The Problem:** Repeatedly clicking the browser's refresh button (the round refresh icon on top 🔄) forced the user to sit through the full 2.2s logo bounce, sheen, shockwaves, and spinner overlay, creating user irritation.
+  - **The Solution:** 
+    1. **Inline `<head>` Execution:** In `src/app/layout.jsx`, an inline `<script>` runs synchronously in `<head>` before any body HTML is parsed:
+       ```javascript
+       if (s && s.getItem('rimt_loader_seen')) {
+         document.documentElement.setAttribute('data-rimt-loader', 'seen');
+       }
+       ```
+    2. **Instant Zero-Flicker CSS Suppression:** In `src/styles/globals.css`:
+       ```css
+       html[data-rimt-loader="seen"] .rimt-loader {
+         display: none !important;
+         visibility: hidden !important;
+         opacity: 0 !important;
+         pointer-events: none !important;
+         animation: none !important;
+       }
+       ```
+       The browser's layout engine suppresses the entire loader overlay at 0ms — not even a single frame or static card flashes.
+    3. **Synchronous React Client Hydration:** In `src/components/auth/AuthGuard.jsx`:
+       - On mount, if `isSeen` is true (`sessionStorage.getItem('rimt_loader_seen') === '1' || data-rimt-loader === 'seen'`):
+         - `minElapsed` and `loaderExited` are set to `true` immediately.
+         - Cached credentials (`localStorage.getItem('rimt_admin_user')`) are restored synchronously into `admin` state.
+         - `sessionReady` is set to `true` immediately.
+         - `children` (Admin Dashboard) mounts and renders instantly with **zero delay and zero animation**.
+         - Asynchronous `checkAuth()` runs silently in the background to re-verify the token with `/api/admin/auth/me`.
+    4. **First-Time Visits Preserved:** When opening the website for the first time in a new tab, from Google, or from localhost, `sessionStorage` has no `rimt_loader_seen` flag:
+       - The full institutional 2.2s branded animation (`SessionLoader` with `logoElasticCycle` bounce, white sweep, shockwave rings) plays smoothly.
+       - Upon completing the first animation, `rimt_loader_seen` is recorded in `sessionStorage` and `data-rimt-loader="seen"` is stamped on `<html>`.
+    5. **Login Animation Preserved:** When a user logs out (`handleSignOut`), `rimt_loader_seen` is removed from `sessionStorage`. When they log back in from `AuthScreen` (`handleAuthenticated`), the verification animation (`SplashVerificationScreen`) runs with the red dot to green checkmark transition, and sets `rimt_loader_seen` upon completion.
+
+### 4.10 CVForge AI Resume Builder Integration (`RESUMEE.md`)
+- **Paired Mobile App Integration:** Paired student application (`APP-RIMT-BCA`) features the institutional **CVForge AI Resume Builder** (`src/screens/ResumeScreen.jsx` and `src/services/resumeService.js`).
+- **4 ATS-Certified Templates:**
+  1. `navy_ledger`: Executive single-column ledger with navy headers and formal academic layout.
+  2. `richard_sanchez`: Slate split two-column format with skills sidebar and featured projects timeline.
+  3. `herman_walton`: Classic corporate analyst format with institutional serif typography and verified credentials box.
+  4. `sunny_singh`: Modern technical developer template with tech-stack badges and GitHub commit highlights.
+- **Direct Intent PDF Viewing (Zero Cloud Dependencies):** Generates vector PDF in local scoped storage (`FileSystem.documentDirectory`) and launches native Android PDF viewers via `android.intent.action.VIEW` directly without third-party cloud uploads.
+- **Data Synchronization:** Realtime synchronization with admin-managed student dossiers (`student_profiles`, `student_projects`, `student_certificates`, `student_academic_summary`).
+
 
 ---
 
@@ -366,6 +581,54 @@ c:\Users\r3dha\ADMIN-PANEL-RIMT\
   - **Auth:** Authenticated user with `status === 'APPROVED'`. Returns profile data.
 * **`PUT /api/profile`**
   - **Auth:** Authenticated user with `status === 'APPROVED'`. Modifies profile data.
+
+### 5.6 Corporate Company Authentication (`src/app/api/company/auth/`)
+> ⭐ **NEW:** Full company recruiter authentication system with email/password registration, sign-in, and Google OAuth.
+
+* **`POST /api/company/auth/register`**
+  - **Auth:** Public.
+  - **Request Body:**
+    ```json
+    {
+      "company_name": "Google LLC",
+      "recruiter_name": "Sarah Jenkins",
+      "email": "recruiter@google.com",
+      "password": "SecurePass@123",
+      "industry": "Cloud Computing & AI"
+    }
+    ```
+  - **Response (200 OK):**
+    ```json
+    { "success": true, "message": "Company registration successful.", "token": "<jwt>", "company": { "id": "comp-...", "company_name": "Google LLC", "role": "COMPANY", "status": "ACTIVE" } }
+    ```
+  - **Response (409 Conflict):** `{ "error": "An account with this corporate email already exists." }`
+  - **Security:** Password hashed with PBKDF2-SHA256. JWT token (14-day expiry) set as `company_token` httpOnly cookie.
+
+* **`POST /api/company/auth/login`**
+  - **Auth:** Public.
+  - **Request Body:** `{ "email": "recruiter@google.com", "password": "SecurePass@123", "remember_me": true }`
+  - **Responses:**
+    - `404 Not Found`: `{ "error": "No registered company found with this email." }`
+    - `401 Unauthorized`: `{ "error": "Invalid corporate email or password." }`
+    - `403 Forbidden`: `{ "error": "This corporate partner account is currently deactivated." }`
+    - `200 OK`: `{ "success": true, "token": "<jwt>", "company": { ... } }`
+  - **Security:** Session duration: 30 days (remember_me) or 7 days.
+
+* **`POST /api/company/auth/google`**
+  - **Auth:** Public.
+  - **Request Body:** `{ "email": "recruiter@google.com", "name": "Google Talent Acquisition", "avatar_url": "...", "company_name": "Google LLC" }`
+  - **Behavior:** Auto-registers new company if email not found; signs in existing company. Infers company name from email domain if not provided.
+  - **Response (200 OK):** `{ "success": true, "isNew": true|false, "token": "<jwt>", "company": { ... } }`
+  - **Security:** 30-day JWT session. `company_token` httpOnly cookie.
+
+* **`GET /api/company/auth/me`**
+  - **Auth:** `withAuth(handler, { requiredRole: 'COMPANY' })` — JWT Bearer token required.
+  - **Response (200 OK):** `{ "success": true, "company": { "id": "...", "company_name": "...", "role": "COMPANY", ... } }`
+
+* **`POST /api/company/auth/logout`**
+  - **Auth:** Public.
+  - **Response (200 OK):** `{ "success": true, "message": "Corporate session ended." }`
+  - **Side Effect:** Deletes `company_token` cookie.
 
 ---
 
@@ -590,6 +853,38 @@ CREATE TABLE IF NOT EXISTS public.admin_audit_log (
   user_agent TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+
+-- 10. Institutional Internship Opportunities (Overhaul Complete)
+CREATE TABLE IF NOT EXISTS public.internship_opportunities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  company_name TEXT NOT NULL,
+  company_logo_url TEXT,
+  duration_months INT NOT NULL CHECK (duration_months BETWEEN 1 AND 24),
+  season TEXT NOT NULL DEFAULT 'any' CHECK (season IN ('winter', 'summer', 'spring', 'autumn', 'any')),
+  compensation_type TEXT NOT NULL DEFAULT 'stipend' CHECK (compensation_type IN ('stipend', 'non_stipend', 'paid')),
+  stipend_amount NUMERIC(10,2),
+  fee_amount NUMERIC(10,2),
+  location TEXT,
+  work_mode TEXT NOT NULL DEFAULT 'on_site' CHECK (work_mode IN ('on_site', 'remote', 'hybrid')),
+  skills_required TEXT[] NOT NULL DEFAULT '{}',
+  department TEXT[] NOT NULL DEFAULT '{"BCA"}',
+  openings INT NOT NULL DEFAULT 1 CHECK (openings >= 1),
+  application_deadline DATE,
+  description TEXT,
+  requirements TEXT,
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'draft', 'closed', 'filled')),
+  is_visible BOOLEAN NOT NULL DEFAULT true,
+  created_by UUID,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+  -- Strict mutual exclusivity for compensation models
+  CONSTRAINT chk_internship_compensation CHECK (
+    (compensation_type = 'stipend' AND stipend_amount IS NOT NULL AND stipend_amount > 0 AND fee_amount IS NULL) OR
+    (compensation_type = 'paid' AND fee_amount IS NOT NULL AND fee_amount > 0 AND stipend_amount IS NULL) OR
+    (compensation_type = 'non_stipend' AND stipend_amount IS NULL AND fee_amount IS NULL)
+  )
+);
 ```
 
 ### 6.3 Security, Row Level Security (RLS) & Helper Functions
@@ -630,6 +925,35 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - **Allowed MIME Types:** `application/pdf`, `image/jpeg`, `image/png`, `image/webp`.
 - **Access Protocol:** Signed URLs generated on-demand by backend API (`db.getSignedCertificateUrl`).
 - **Storage RLS:** Admins have full access; students can only download objects where they own the associated visible certificate record.
+
+### 6.5 Companies Table (In-Memory + Supabase)
+```sql
+-- Company / Corporate Recruiter accounts (in-memory store with Supabase persistence)
+-- Schema used by initCompanyDb(), getCompanyByEmail(), getCompanyById(), createCompany(), getAllCompanies()
+CREATE TABLE IF NOT EXISTS public.companies (
+  id TEXT PRIMARY KEY,                        -- e.g. 'comp-1791354383460-9f8ey'
+  company_name TEXT NOT NULL,                 -- e.g. 'Google LLC'
+  recruiter_name TEXT NOT NULL,               -- e.g. 'Google Campus Talent'
+  email TEXT NOT NULL UNIQUE,                 -- Normalized lowercase corporate email
+  password_hash TEXT,                         -- PBKDF2-SHA256 hash (NULL for Google OAuth accounts)
+  auth_provider TEXT NOT NULL DEFAULT 'email', -- 'email' | 'google'
+  industry TEXT DEFAULT 'Corporate Recruitment', -- e.g. 'Cloud & AI Technology'
+  avatar_url TEXT,                            -- UI Avatars fallback or custom avatar
+  role TEXT NOT NULL DEFAULT 'COMPANY',        -- Always 'COMPANY'
+  status TEXT NOT NULL DEFAULT 'ACTIVE',        -- 'ACTIVE' | 'DISABLED'
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Default Seeded Companies (via `initCompanyDb()` in `db.js`):**
+| ID | Company | Email | Auth Provider | Industry |
+|---|---|---|---|---|
+| `comp-google-001` | Google LLC | `recruiter@google.com` | google | Cloud & AI Technology |
+| `comp-msft-002` | Microsoft Corporation | `recruiter@microsoft.com` | google | Enterprise Software & Azure |
+| `comp-tcs-003` | Tata Consultancy Services | `campus@tcs.com` | email | IT Consulting & Services |
+
+**Default Password:** `Company@RIMT#2026` (PBKDF2-SHA256, salt: `rimt-salt-key`, 10,000 iterations)
 
 ---
 
@@ -735,11 +1059,141 @@ NEXT_PUBLIC_SUPABASE_KEY=<anon-key>
 | **LinkedIn-Style Scholar Dossier** | `src/components/student/StudentLinkedInProfileModal.jsx`, `src/views/StudentManagement.jsx`, `src/views/OnboardingApprovals.jsx` | ✅ Complete — Hero banner, bio, CGPA/SGPA tracker, projects portfolio, documents vault, live admin overrides |
 | **Cloudinary Upload Signing** | `src/app/api/cloudinary/sign/route.js`, `.env` (CLOUDINARY_*) | ✅ Complete — Server-side SHA-1 signature generator, CORS-enabled, folder validation, mobile app integration via `EXPO_PUBLIC_CLOUDINARY_SIGNING_URL` |
 | **Talent Showcase (formerly Company Management)** | `src/views/CompanyManagement.jsx`, `src/components/student/TalentProfileModal.jsx`, `src/components/Sidebar.jsx`, `src/constants/tokens.js`, `src/lib/db.js` | ✅ Complete — Recruiter-facing student portfolio gallery with profile strength scoring, filter pills, department filters, sort options, grid/list views, and read-only TalentProfileModal. Sidebar and module registry renamed from "Company Management" to "Talent Showcase" with `person_search` icon. |
+| **Student Profession Badges** | `src/components/placement/PlacedStudentsCard.jsx`, `src/lib/placementStats.js` | ✅ Complete — Color-coded profession pills (Cyber Security, Cloud DevOps, Full Stack, FinTech, Risk Analyst, Dance, Music) with matching icons via `getProfessionBadge()`. Dynamic fallback profession resolution for diverse BCA/BSc specializations and custom talents (dancer, singer, etc.). |
+| **Official SVG Company Logos** | `src/components/common/CompanyBrandLogo.jsx`, `src/components/placement/PlacedStudentsCard.jsx`, `src/components/placement/HiringCompaniesSection.jsx` | ✅ Complete — Self-contained SVG vector brand logos for Google, Microsoft, AWS, Deloitte, HDFC Bank, TCS (plus L&T, Infosys, Wipro). Zero external URL dependencies; immune to CORS/Wikimedia 403 errors. |
+| **Multi-Account Session Isolation** | `src/lib/middleware.js`, `src/lib/authApi.js`, `src/components/auth/AuthGuard.jsx`, `src/components/auth/AuthScreen.jsx`, `src/components/profile/ProfileMenu.jsx`, `src/components/profile/AddAccountModal.jsx` | ✅ Complete — Gmail-style account chooser, 1-click sign-in, multi-account dropdown in profile menu, `isSameAdminAccount` session guards, token priority over stale cookies |
+| **Dual-Portal Auth (Admin + Company)** | `src/components/auth/AuthScreen.jsx`, `src/components/auth/AuthGuard.jsx`, `src/app/api/company/auth/*` (5 routes), `src/lib/db.js` (company CRUD), `src/lib/authApi.js` (company client), `src/lib/middleware.js` (company role guard) | ✅ Complete — Segmented Admin/Company portal switcher, company registration (email/password), sign-in, Google OAuth with One-Tap modal, JWT sessions with httpOnly cookies, 3 seeded companies (Google, Microsoft, TCS) |
+| **Company Role-Based Access Control** | `src/components/Sidebar.jsx`, `src/app/page.jsx`, `src/app/company/page.jsx`, `src/app/company/auth/page.jsx` | ✅ Complete — `companyAllowedModules = ['companies', 'statistics']`, locked modules show 🔒 + "Staff" badge, `CompanyLockedModuleView` with access privileges card, company sidebar brand card adapts blue theme, dedicated `/company` and `/company/auth` routes |
 | **Expo Mobile Admin Screens** | `src/expo/AdminPortalNavigator.jsx`, `src/expo/screens/*`, `src/expo/colors.js` | ✅ Present — 7 mobile admin screen components (Student, Company, Drive, Internship, Placement, Training, Report) |
+| **Branded Session Loader** | `src/components/common/SessionLoader.jsx`, `src/styles/globals.css`, `src/components/auth/AuthGuard.jsx`, `src/app/loading.jsx` | ✅ Complete — Matched login animation (2.2s `logoElasticCycle` + white sweep + shockwaves), single FCP clock, fixed overlay mounting with zero blank screen |
+| **Zero-Irritation Refresh Suppression** | `src/components/auth/AuthGuard.jsx`, `src/styles/globals.css`, `src/app/layout.jsx` | ✅ Complete — Repeated browser refresh triggers zero animation/loader flicker via `rimt_loader_seen`, synchronous `<head>` attribute, and CSS `display: none !important;`. First-time visit and post-login verification animation preserved. |
+| **Drive Management Operations Suite** | `src/views/DriveManagement.jsx`, `src/components/drive/*` (8 components), `src/lib/driveClient.js`, `src/lib/driveUtils.js`, `drive.md` | ✅ Complete — 4 core capabilities: Upcoming drive creation, registration links, broadcast announcements with student mobile app notifications, round-by-round results, zero mock data. |
+| **CVForge AI Resume Builder Integration** | `RESUMEE.md`, paired student app (`APP-RIMT-BCA`) | ✅ Complete — 4 ATS-certified templates (`navy_ledger`, `richard_sanchez`, `herman_walton`, `sunny_singh`), direct Android Intent vector PDF launch. |
 
 ---
 
 ## 11. Changelog
+- **2026-10-20 (Zero-Irritation Refresh Animation Suppression & Drive Management Master Memory Update):**
+  - **Browser Refresh Animation Guard:** Resolved user-irritation issue where repeatedly pressing the browser's round refresh button (🔄) re-triggered the full 2.2s logo bounce, sheen, shockwaves, and spinner overlay.
+  - Implemented session persistence via `sessionStorage.getItem('rimt_loader_seen')` and inline `<head>` script in `src/app/layout.jsx` that sets `data-rimt-loader="seen"` before any HTML is parsed.
+  - Enforced instantaneous CSS rule in `src/styles/globals.css`: `html[data-rimt-loader="seen"] .rimt-loader { display: none !important; ... }` preventing any loader flash at 0ms.
+  - In `src/components/auth/AuthGuard.jsx`, when `isSeen` is true on repeat reload: synchronously set `setMinElapsed(true)`, `setLoaderExited(true)`, restore cached user from `localStorage.getItem('rimt_admin_user')`, and set `sessionReady = true` immediately so the Admin Dashboard renders without delay.
+  - First-time visit behavior fully preserved: clean browser tabs or initial links from Google/localhost run the branded 2.2s `SessionLoader` animation once and mark it as seen.
+  - Login verification animation fully preserved: `handleSignOut` clears the flag, and `handleAuthenticated` triggers `SplashVerificationScreen` (red dot → green checkmark sequence).
+  - **Drive Management Module Full Integration:** Integrated the complete 8-component suite (`DriveFormModal`, `DriveDetailDrawer`, `DriveCard`, `AnnouncementsPanel`, `RegistrationLinksPanel`, `ResultsPanel`, `StatusBadges`, `NotifyConfirmModal`), client `driveClient.js`, and utils `driveUtils.js` with zero mock data governance into `ADMIN.md`.
+  - **Full Repository Memory Ingestion:** Enriched `ADMIN.md` with complete directory inventory, configuration files, test suites (146/146 tests passing), and CVForge resume builder synchronization specs.
+
+- **2026-10-20 (Session Loader: matched login animation, single clock, no blank handoff, trimmed duration):**
+  - Matched login animation: Cloned exact visual and motion spec from institutional admin login animation (`SplashVerificationScreen` in `AuthGuard.jsx:296`), including `logoElasticCycle` elastic bounce (1 → 0.55 → 1.24 → 0.96 → 1), `logoWhiteSweep` sheen, dual shockwave rings, and dual-spinner frosted status pill.
+  - Refined duration per user request: Reduced total animation time frame by 0.6s from 2.8s to 2.2s (`MIN_LOADER_MS` reduced from 2500ms to 1900ms, `logoElasticCycle` accelerated from 2.8s to 2.2s, sheen sweep to 2.0s, shockwave cycle to 2.4s) while fully preserving the exact visual branding, colors, and elastic bounce physics.
+  - Fixed 6-7s duration: Implemented single mount-only clock anchored to First Contentful Paint (`MIN_LOADER_MS = 1900` + `FADE_MS = 300` = `T_anim = 2200ms`), ensuring `loading.jsx` remains timerless and eliminating multiple sequenced clocks.
+  - Fixed blank screen handoff: Rebuilt rendering architecture so `children` and `AuthScreen` mount directly underneath the opaque `z-[9999]` fixed loader overlay upon session check resolution; the overlay then fades out over 300ms when `minElapsed` is reached, guaranteeing no blank frame ever occurs.
+
+- **2026-10-18 (Internship Opportunities & Live Monitoring Module Overhaul — INTERNSHIP.md Complete):**
+  1. **Strict Real-Data Architecture & Zero Synthetic Dummy Mock Elimination:**
+     - Completely scrubbed all hardcoded mock/dummy internship listings (Samsung, 32,500 INR, Aman Sharma, Harpreet, Simranjeet, 312/248 counts) from `src/constants/data.js`, `src/views/InternshipMonitoring.jsx`, and `src/expo/screens/InternshipMonitoringScreen.jsx`.
+     - In-memory fallback and database state strictly starts at 0 records. Clean, unseeded zero-state with institutional empty-state cards.
+     - Live Supabase Realtime synchronization across `internship_opportunities` and `student_internships` with instant UI auto-refresh.
+  2. **Database Schema & Constraints (`supabase/migrations/20261018_internship_opportunities.sql`):**
+     - Created `public.internship_opportunities` table with strict data integrity checks:
+       - `duration_months`: constrained `CHECK (duration_months BETWEEN 1 AND 24)`.
+       - `compensation_type`: constrained `CHECK (compensation_type IN ('stipend', 'non_stipend', 'paid'))`.
+       - **Mutual Exclusivity Enforced at DB Level:** `CHECK ((compensation_type = 'stipend' AND stipend_amount IS NOT NULL AND stipend_amount > 0 AND fee_amount IS NULL) OR (compensation_type = 'paid' AND fee_amount IS NOT NULL AND fee_amount > 0 AND stipend_amount IS NULL) OR (compensation_type = 'non_stipend' AND stipend_amount IS NULL AND fee_amount IS NULL))`.
+       - `season`: constrained `CHECK (season IN ('winter', 'summer', 'spring', 'autumn', 'any'))`.
+       - `status`: constrained `CHECK (status IN ('open', 'draft', 'closed', 'filled'))`.
+       - `skills_required` (text[]), `department` (text[]), `is_visible` (boolean).
+       - Full RLS policies for admin write/manage and public/authenticated read.
+  3. **Shared Validation Engine (`src/lib/internshipValidation.js`):**
+     - Canonical validation logic used identically by server route handlers and client-side modal forms: `validateOpportunity()`, `normalizeSkills()`, `sanitizePayload()`.
+     - De-duplicates and normalizes case-insensitive skills arrays.
+  4. **Data Layer & CRUD Functions (`src/lib/db.js`):**
+     - Added `getInternshipOpportunities(filters)` with rich multi-filter query support (search `q`, `skills`, `duration`, `season`, `compensation`, `company`, `department`, `status`, `sort`).
+     - Added `getInternshipOpportunityById(id)`, `createInternshipOpportunity(data, actor)`, `updateInternshipOpportunity(id, updates, actor)`, `deleteInternshipOpportunity(id, actor)`, `toggleInternshipOpportunityVisibility(id, actor)`, and `getStudentInternshipsFeed()`.
+     - Audit logging: Every mutation automatically creates an entry in `public.admin_audit_log` tracking the actor and payload changes.
+  5. **REST API Endpoints (`src/app/api/admin/internship-opportunities/*`):**
+     - `GET /api/admin/internship-opportunities`: Search & filter opportunities with dynamic aggregations.
+     - `POST /api/admin/internship-opportunities`: Role-gated admin insertion with schema validation and audit logging.
+     - `GET /api/admin/internship-opportunities/[id]`: Individual opportunity lookup.
+     - `PATCH /api/admin/internship-opportunities/[id]`: Partial edits and visibility toggle.
+     - `DELETE /api/admin/internship-opportunities/[id]`: Opportunity deletion with audit record.
+     - **Role Security Guard:** Strictly prevents non-admins and `COMPANY` recruiter role users from modifying opportunities (HTTP 403 `FORBIDDEN_ROLE`).
+  6. **Modular UI Components (`src/components/internship/` & `src/views/InternshipMonitoring.jsx`):**
+     - **`OpportunityCard.jsx`:** Rich card presentation with company logo/monogram, role, department badges, duration & season indicators, stipend/paid currency formatting, skills tags, status pill, visibility toggle, edit/delete actions, and hover-zoom micro-interactions (`hover:scale-[1.01] transition-all`).
+     - **`OpportunityFormModal.jsx`:** Comprehensive modal with live validation, compensation exclusivity toggle (stipend vs paid training fee), duration slider & presets, season selector, skill tags input with backspace removal, application deadline, and department multi-select.
+     - **`InternshipFilters.jsx`:** Full-width edge-to-edge responsive filter toolbar. Compensation (4 options), Season (5 options), and Duration (6 options) filter buttons are arranged in responsive grids (`grid-cols-2 sm:grid-cols-4`, `grid-cols-2 md:grid-cols-5`, `grid-cols-2 sm:grid-cols-3 lg:grid-cols-6`) spanning 100% of the available width from label to the far right margin. "Paid (Student Pays)", "Autumn", and "Other" span cleanly to the right edge with zero unused void space. Hover-zoom micro-interactions refined to `scale(1.035)` with centered label & icon typography. Dynamic skill filtering with local search and expand/collapse.
+     - **`StudentInternshipCard.jsx`:** Live student internship card with status, academic details, and 1-click LinkedIn-style dossier inspection.
+     - **`InternshipMonitoring.jsx`:** Rebuilt view with dual-tab architecture (Opportunities vs Live Student Internships), real-time KPI metrics, search, sorting, grid/list view toggles, empty state with "Post First Opportunity" CTA, and delete confirmation dialog.
+  7. **Automated Testing Suite (`tests/internship-opportunities.test.mjs`):**
+     - 57 dedicated unit and integration tests covering: clean in-memory zero-state, mutual exclusivity validation, duration and season bounds, skills normalization and de-duplication, full CRUD and audit logging, multi-filter combination queries, and role-based security gating.
+     - 100% pass rate: 57/57 tests passing. Full repository test suite: 146/146 tests passing (Onboarding: 21, Admin Auth: 18, Dossier: 26, Company Auth: 24, Internship: 57).
+- **2026-10-07 (Company Sidebar Locked Tabs Removal, Multi-Account Chooser Isolation, and Balanced Auth Gateway Status):**
+  1. **Company Sidebar Cleanup (Problem 1 Solved):**
+     - Updated `src/components/Sidebar.jsx` navigation renderer: When `userRole === 'COMPANY'`, `navItems` is strictly filtered with `companyAllowedModules.includes(item.id)`.
+     - In the left sidebar under "Core Modules", corporate recruiters now only see the 2 modules they have access to: **Company Management** and **Placement Statistics**. All 6 locked/restricted modules (Onboarding Approvals, Student Management, Drive Management, Training Management, Internship Monitoring, Report Generation) are completely removed from the DOM.
+  2. **Profile Menu Multi-Account Switcher Role Isolation (Problem 2 Solved):**
+     - In `src/components/profile/ProfileMenu.jsx`, filtered `otherAccounts` strictly by account role (`isCompany ? accIsCompany : !accIsCompany`).
+     - Corporate recruiters logged in as a company now only see other corporate company accounts in the "Switch Account" menu (admin accounts like Raj Kumar or Sagrika are completely filtered out).
+     - Administrators logged in now only see other administrator accounts in the "Switch Account" menu (company accounts like Microsoft or Google are completely filtered out).
+     - "Add another account" dynamically routes to `/company/auth` for company recruiters and `/admin/add-account` for administrators.
+     - Updated `handleSwitchAccount` in `src/components/auth/AuthGuard.jsx` to seamlessly support switching into company accounts via `companyLogin` credential fallback.
+  3. **Auth Screen Multi-Account Chooser Isolation & Balanced Gateway Status (Problem 3 Solved):**
+     - In `src/components/auth/AuthScreen.jsx`, strictly segmented saved accounts into `adminSavedAccounts` and `companySavedAccounts`.
+     - **Institutional Admin Gateway:** The "Choose an account" screen now only renders authorized administrator accounts (`Raj Kumar`, `Sagrika`). Corporate company accounts are completely filtered out.
+     - **Company Portal Gateway:** Introduced a dedicated corporate account chooser that only renders corporate company accounts (`Microsoft Corporation`, `Google LLC`, `TCS`). Institutional admin accounts are completely filtered out.
+     - **Balanced Gateway Status:** Replaced the asymmetric, redundant second-row switch button (`Administrative Access Gateway` on left vs `Company Access ->` on right) with a clean, beautifully centered, balanced gateway status indicator badge with micro-status pills for both Institutional Admin and Corporate Recruiter gateways.
+     - Full automated test suite passing (63/63 tests) and Next.js Turbopack production build verified cleanly.
+- **2026-10-07 (Student Profession Badges, Official SVG Company Logos in Placed Students Card, Multi-Account Session Isolation, Corporate Logos & Gmail-Style Account Chooser):**
+  1. **Student Profession Badges in Placed Students Card:**
+     - Added `getProfessionBadge()` function to `src/components/placement/PlacedStudentsCard.jsx` — returns distinct icon + color badge for each profession category:
+       - 🛡 **Cyber Security** → emerald green (`shield` icon)
+       - ☁ **Cloud / DevOps / AWS / Azure** → sky blue (`cloud` icon)
+       - 💻 **Developer / SDE / Full Stack / Software** → indigo (`code` icon)
+       - 💃 **Dance / Dancer** → pink (`directions_walk` icon)
+       - 🎶 **Singing / Music / Artist** → purple (`music_note` icon)
+       - 📊 **Risk / Consultant / Analyst** → amber (`query_stats` icon)
+       - 🏦 **FinTech / Finance / Banking** → teal (`account_balance` icon)
+       - 🏷 **Default** → slate (`badge` icon)
+     - Each student row now displays their profession as a colorful pill badge next to their verified checkmark.
+     - Profession data flows from `src/lib/placementStats.js` → `getHiringPairForStudent()` → `getLivePlacedStudents()` → `item.student.profession`.
+  2. **Official SVG Company Logos in Placed Students Card:**
+     - Replaced external `logoUrl` image tags and generic Material Symbol fallbacks with `<CompanyBrandLogo company={item.company} />` — self-contained SVG vectors.
+     - Created `src/components/common/CompanyBrandLogo.jsx` with official vector logos for Google, Microsoft, AWS, Deloitte, HDFC Bank, TCS, L&T, Infosys, and Wipro. Dynamic monogram fallback for unknown companies.
+     - All SVGs are inline, responsive, CORS-immune, and never 403 on external hotlinks.
+  3. **Enhanced Profession Resolution in `placementStats.js`:**
+     - Added dynamic profession detection for diverse BCA/BSc specializations and custom talents (dancers, singers, musicians, etc.).
+     - Fallback profession is now department-aware: Cyber Security dept → `Cyber Security Specialist`, IT dept → `Enterprise IT Systems Engineer`, BCA/Computer dept → `Full Stack Software Developer`.
+     - Custom student professions (from `student.profession`, `student.headline`, or `student.bio`) are preserved and take priority.
+  4. **Fixed Session Reversion Bug (Sagrika → Raj Kumar):**
+     - Diagnosed and resolved root cause where clicking actions as administrator **Sagrika** reverted session to **Raj Kumar**.
+     - In `src/lib/middleware.js`, updated `extractToken(req)` to prioritize the explicit `Authorization: Bearer <token>` header over stale client cookies.
+     - In `withAuth`, verified individual JWT tokens and bound `req.user` to the decoded administrator identity before evaluating development fallback logic (`isPortalAdmin`), preventing `x-admin-portal: true` headers from hardcoding `Raj Kumar`.
+     - In `src/lib/authApi.js` (`getAdminMe`) and `src/components/auth/AuthGuard.jsx`, added active session matching guards (`isSameAdminAccount`) so background authentication revalidations cannot overwrite the currently active administrator.
+  5. **Official Corporate Brand Vector Logos (Hiring Companies Section):**
+     - Replaced generic Material Symbol placeholder icons with authentic, high-fidelity SVG brand logos in `src/components/placement/HiringCompaniesSection.jsx`:
+       - **Google India Pvt Ltd:** Official 4-color Google "G" vector logo.
+       - **Microsoft Corporation India:** Official 4-color square vector logo.
+       - **Amazon Web Services (AWS):** Official AWS smile arrow vector badge.
+       - **Deloitte USI:** Official Deloitte wordmark with lime green dot.
+       - **HDFC Bank Ltd:** Official blue & red geometric cross grid logo.
+       - **Tata Consultancy Services (TCS):** Official Tata blue brand emblem.
+       - Built-in vector support for **L&T**, **Infosys**, and **Wipro**, plus dynamic monogram fallbacks.
+     - Embedded SVGs are completely self-contained, fully responsive, and immune to external CORS/Wikimedia 403 hotlink errors.
+  6. **Gmail-Style Account Chooser & 1-Click Sign-In:**
+     - In `src/components/auth/AuthScreen.jsx`, introduced a **Gmail-Style Account Chooser** screen when remembered accounts exist on the device.
+     - Displays avatar, name, email, and role badge (`HOD BCA`, `Vice HOD BCA`).
+     - **1-Click Instant Sign-In:** Clicking an account signs in immediately without repeatedly typing username and password.
+     - Includes "Use another account" button to toggle manual credential form, and "Remove an account" device management.
+  7. **Multi-Account Dropdown & Session Preservation:**
+     - In `AuthGuard.jsx`, `handleSignOut` preserves accounts in `rimt_admin_accounts` instead of deleting them.
+     - In `ProfileMenu.jsx`, dynamically lists other logged-in accounts under the active session header with 1-click switching.
+     - Fixed `isSameAdminAccount` in `src/lib/authApi.js` so accounts with `email: null` are never accidentally overwritten.
+  8. **Dedicated Full-Page Add Account Route (`/admin/add-account`):**
+     - Created `src/components/profile/AddAccountModal.jsx` with RIMT crest, sweep sheen animation, Sign In / Register tabs, password strength meter, and quick-switch account cards.
+  9. **Interactive Google Maps Links:**
+     - Converted location badges (Karnataka, Telangana, Punjab, etc.) and geographical campus cards in `HiringCompaniesSection.jsx` into clickable Google Maps search links.
+   10. **Syntax Fix in `placementStats.js` & Turbopack API Verification:**
+      - Resolved `Expected ';', got ':'` Turbopack compilation error at `src/lib/placementStats.js:320` caused by duplicate object properties and redundant closing braces on the `student` payload in `getLivePlacedStudents()`.
+      - Validated syntax with `node -c` and verified live API response from `/api/placement-stats/placed-students` returning HTTP 200 with dynamic student profession badges and verified company corporate data.
 - **2026-10-05 (Company Management & Talent Profile Enhancements):**
   1. **Sidebar & Module Registry Restoration:** Replaced "Talent Showcase" with "Company Management" in `src/components/Sidebar.jsx` and `src/constants/tokens.js`, binding with the `business` icon and corporate directory descriptors. Updated action ribbon and hero headers in `src/views/CompanyManagement.jsx`.
   2. **Glossy Light Red "View Full Profile" Button & Glossy KPI Cards:** Re-styled the "View Full Profile" CTA on student talent cards into a glossy light red card/button (`h-9 w-full rounded-xl`, glassmorphic light red gradient, crisp crimson typography, glossy light reflection sweep). Re-styled the three mini KPI cards (Projects, Internships, Certificates) with high-gloss gradients, inset highlights, and clean borders while preserving exact compact dimensions.
@@ -775,6 +1229,72 @@ NEXT_PUBLIC_SUPABASE_KEY=<anon-key>
   4. **Build & Test Verification:**
      - `npm run build` compiled 100% cleanly (7/7 static and dynamic routes optimized).
      - Full test suite passing 65/65 (26/26 dossier-academic, 21/21 onboarding, 18/18 admin-auth).
+- **2026-10-07 (Corporate Company Portal, Registration Screen, Google OAuth & Role-Based Access Control):**
+  1. **Dual Portal Authentication (`AuthScreen.jsx` — 1071 lines):** Added corporate company recruiter authentication directly on the login gateway alongside administrative sign-in. Top segmented pill switcher allows switching between **"Institutional Admin"** (maroon `#7A1D27`) and **"Company Portal"** (blue `#0B4EA2`). Quick "Company Access →" button positioned at top right of the card (exactly where the red circle was marked in the user's screenshot). Company Portal shows "Corporate Recruiter Gateway" badge with back-to-admin toggle.
+  2. **Corporate Registration & Sign In:** Created dedicated tab-based flows:
+     - **Register Company (New):** Company Name*, Recruiter Full Name, Industry/Hiring Sector dropdown (6 options), Official Corporate Email*, Password* fields.
+     - **Sign In (Existing):** Email + Password with "Remember corporate session" toggle.
+     - **Continue with Google:** Official multi-colored Google SVG icon button → opens interactive Google One-Tap modal with 4 pre-configured corporate accounts (Google, Microsoft, Amazon, TCS) + custom email input for any Google Workspace.
+     - All registrations and sign-ins persist directly to the database with JWT tokens and httpOnly cookies.
+  3. **Backend API Endpoints (`src/app/api/company/auth/*`):** Created 5 REST route handlers:
+     - `POST /api/company/auth/register`: Validates fields, checks email uniqueness, hashes password with PBKDF2-SHA256, creates company in DB, generates 14-day JWT, sets `company_token` httpOnly cookie.
+     - `POST /api/company/auth/login`: Authenticates corporate email and password, validates account status (ACTIVE required), generates JWT (7 or 30 day based on remember_me).
+     - `POST /api/company/auth/google`: Handles Google OAuth — auto-registers new company if email not found (infers name from domain), signs in existing companies, generates 30-day session.
+     - `GET /api/company/auth/me`: Returns sanitized active company recruiter profile, protected by `withAuth(handler, { requiredRole: 'COMPANY' })`.
+     - `POST /api/company/auth/logout`: Clears `company_token` cookie.
+  4. **Database & In-Memory Store (`src/lib/db.js`):** Added 5 company CRUD functions:
+     - `initCompanyDb()`: Seeds default hiring partners (Google LLC, Microsoft, TCS) with PBKDF2-hashed default password `Company@RIMT#2026`.
+     - `getCompanyByEmail(email)`: Supabase `ilike` query + in-memory fallback.
+     - `getCompanyById(id)`: Supabase `eq` query + in-memory fallback.
+     - `createCompany({...})`: Creates company record in both Supabase and in-memory store with auto-generated ID, avatar fallback, timestamps.
+     - `getAllCompanies()`: Returns all companies from in-memory store.
+     - `getMemoryCompanies()`: Internal accessor for `global.__RIMT_DB_COMPANIES` array.
+  5. **Client-Side Auth API (`src/lib/authApi.js`):** Added 3 company client methods:
+     - `companyRegister({company_name, recruiter_name, email, password, industry})`: POST to `/api/company/auth/register`, stores JWT in localStorage, saves account session.
+     - `companyLogin({email, password, remember_me})`: POST to `/api/company/auth/login`, stores JWT.
+     - `companyGoogleLogin({email, name, avatar_url, company_name})`: POST to `/api/company/auth/google`, stores JWT.
+- **2026-10-10 (CVForge Student Resume Integration, Direct Intent PDF Viewing & Zero-Overflow Layout):**
+  1. **CVForge Student Resume Suite Synchronization:**
+     - The paired student mobile app (`APP-RIMT-BCA`) now features the complete **CVForge Institutional Resume Builder** (`ResumeScreen.jsx` and `resumeService.js`).
+     - Supports 4 official ATS-certified templates (`navy_ledger`, `richard_sanchez`, `herman_walton`, `sunny_singh`) mapping directly to the student's verified academic and portfolio records.
+     - Student dossiers, projects, certifications, and academic summaries edited via the admin portal or student app synchronize seamlessly for instant resume compilation.
+  2. **Direct Intent PDF Launching Without Cloud Uploads:**
+     - Resolved Android Expo Go scoped sandbox issue (`Not allowed to read file under given URL`) by generating Base64 vector PDFs and persisting directly into `FileSystem.documentDirectory`.
+     - Direct `android.intent.action.VIEW` integration launches Google Drive PDF Viewer (`com.google.android.apps.docs.viewer.PdfViewerActivity`) and system PDF readers directly on screen with **zero cloud upload prompts**.
+  3. **Zero-Overflow Layout Polish & Theme Alignment:**
+     - Structured education and degree headers with dedicated score pill badges (`[ Cumulative CGPA: 8.5 / 10.0 ]`, `[ Aggregate: 88% ]`) with `overflow: 'hidden'`, preventing text clipping on mobile displays.
+     - Streamlined the Review screen by removing redundant floating bottom CTAs and aligning the top-right `Export PDF` action with the institutional crimson theme (`#A31321`).
+- **2026-10-07 (Role Isolation, Auto-Repair Sanitization & Dual-Portal Account Strictness):**
+  1. **Sidebar Locked Modules Exclusion (Image 1 fix):** Updated `src/components/Sidebar.jsx` so when logged in as a Corporate Recruiter (`COMPANY` role), locked operational modules (`Onboarding Approvals`, `Student Management`, `Drive Management`, `Training Management`, `Internship Monitoring`, `Report Generation`) are completely excluded from the DOM. Only **Company Management** and **Placement Statistics** are rendered under "Core Modules".
+  2. **Top-Right Profile Menu Account Switching Isolation (Image 2 fix):** Updated `src/components/profile/ProfileMenu.jsx` to enforce strict isolation using `isAdminAccount` and `isCompanyAccount`. Company logins only ever see other corporate company accounts; institutional admin logins only ever see other institutional admin accounts.
+  3. **Dual-Portal Auth Chooser Strict Isolation & Auto-Repair (Images 3 & 4 fix):**
+     - Fixed bug in `src/lib/authApi.js` `saveAccountSession()` where `company_name` was defaulting to `fullName` even for admins.
+     - Added `isAdminAccount(acc)` and `isCompanyAccount(acc)` predicate classifiers in `src/lib/authApi.js`.
+     - Added auto-repair on `getSavedAccounts()`: if any stored record for Raj Kumar, Sagrika, or `@rimt.ac.in` admin has legacy `company_name` or corporate fields in `localStorage`, it is automatically stripped, sanitized, and updated in `localStorage` as pure `ADMIN`.
+     - In `src/components/auth/AuthScreen.jsx`, completely segregated `adminSavedAccounts` and `companySavedAccounts`. Raj Kumar exclusively appears in the Institutional Admin chooser and can never appear in the Company Portal chooser.
+     - Replaced asymmetrical sub-header row with a clean, centered, balanced gateway indicator for both Institutional Admin and Company Portal gateways.
+- **2026-10-06 (Corporate Recruiter Portal & Dual-Portal Authentication Integration):**
+  1. **Dual-Portal Auth Architecture:** Embedded corporate recruiter login and registration directly alongside the existing institutional admin login in `src/components/auth/AuthScreen.jsx`.
+  2. **Pill-Tab Switcher & Mode Separation:** Added dual-tab switcher: **Institutional Admin** (maroon `#6B0018`) vs **Company Portal** (navy `#0B4EA2`).
+     - Extract tokens from both `admin_token` and `company_token` cookies.
+  7. **Role-Based Access Control (`Sidebar.jsx`, `page.jsx`):**
+     - `Sidebar.jsx` accepts `userRole` prop and defines `companyAllowedModules = ['companies', 'statistics']`.
+     - Locked modules show padlock 🔒 icon replacing normal icon, "Staff" badge, muted styling, and tooltip `(Staff Only)`.
+     - Sidebar brand card adapts: "RIMT Corporate" + "Recruiter Portal" badge (blue theme) vs "RIMT Trust" + "T&P Admin Portal" (maroon theme).
+     - Footer shows "Company Access — Verified Corporate Partner" for company users.
+     - Active module styling uses blue gradient for company, maroon gradient for admin.
+     - `page.jsx` renders `CompanyLockedModuleView` when `isCompany && activeModule !== 'companies' && activeModule !== 'statistics'`.
+     - `CompanyLockedModuleView`: Premium lock card with amber lock icon, "Staff-Restricted Operational Module" badge, access privileges checklist (✅ Talent Pool, ✅ Statistics, 🔒 Approvals), and two CTAs (Browse Talent Pool, Placement Statistics).
+     - Company users default to `activeModule: 'companies'` on login.
+     - For institutional staff (Raj Kumar, Sagrika), all 8 modules remain completely open.
+  8. **Dedicated Routes:**
+     - `/company` → `src/app/company/page.jsx` — Renders `AdminPortalDashboard` inside `AuthGuard` with `initialPortalType="company"`.
+     - `/company/auth` → `src/app/company/auth/page.jsx` — Standalone company auth screen, redirects to `/company` after authentication.
+     - `/admin/auth` → Existing admin auth page.
+  9. **AuthGuard Enhancement (`AuthGuard.jsx`):** Updated to accept `initialPortalType` prop, forwarding it to `AuthScreen` so `/company` routes default to the Company Portal tab.
+- **2026-10-10 (CVForge Resume Review Tab Fidelity & Profile Photo Synchronization):**
+  1. **Resume Review Tab Alignment:** Upgraded both `richard_sanchez` (Executive Slate Split) and `herman_walton` (Corporate Analyst Classic) in the mobile app's Review tab (`ResumeScreen.jsx`) so they mirror the exact design tokens, divider lines, icons, and timeline structures of the Preview tab.
+  2. **Profile Avatar Fix:** Restored missing student avatar in Herman Walton Review tab via `waltonPhotoBox` (56x68) and `waltonPhotoImg`. Added safe fallback handling in both `ResumeScreen.jsx` and `resumeService.js` PDF generator.
 - **2026-09-30 (Admin-Managed Student Dossier & Strict Manual Academic Control):**
   1. **Database Schema & RLS:** Added migration `supabase/migrations/20260930_admin_student_dossier.sql` creating 9 tables: `public.student_profiles`, `public.student_projects`, `public.student_git_projects`, `public.student_certificates`, `public.student_internships`, `public.student_academic_summary`, `public.student_semester_records`, `public.student_grades`, and `public.admin_audit_log`. Implemented `public.is_admin()` and `public.current_student_id()` helper functions. RLS ensures full admin CRUD and read-only student access to their own records where `is_visible = true`, with ZERO student write paths. Private bucket `student-certificates` created with signed URL access protocol.
   2. **Strict Manual-Only Academic Governance:** Enforced institutional policy where CGPA (0.00 – 10.00), overall attendance % (0.00 – 100.00), backlogs, semester SGPA, and subject grades are written strictly and exclusively by administrators. Completely eliminated all auto-derivation, triggers, cron jobs, and edge functions. Unset values display as "—" (never fake 0 or 8.65). Changes to grades do not recalculate CGPA. Confirmation modal displaying Old vs New comparison diff is mandatory before saving academic records. Every mutation is logged in `admin_audit_log`.
