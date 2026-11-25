@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 180" width="100%" role="img" aria-labelledby="lang-title lang-desc">
+  <title id="lang-title">T-P-ADMIN-PORTAL Codebase Language Breakdown</title>
+  <desc id="lang-desc">Tracked file line-count percentages: JavaScript and React JSX 86.98%, Markdown 7.38%, SQL 4.30%, CSS 1.23%, JSON and Config 0.11%.</desc>
+
+  <defs>
+    <clipPath id="barClip">
+      <rect x="28" y="64" width="824" height="18" rx="9" ry="9"/>
+    </clipPath>
+    <clipPath id="cardBgClip">
+      <rect x="0" y="0" width="880" height="180" rx="14" ry="14"/>
+    </clipPath>
+  </defs>
+
+  <style>
+    .sans { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .bar-reveal {
+      transform-origin: 28px 73px;
+      animation: growX 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .dot-pulse {
+      animation: softPulse 4s ease-in-out infinite;
+    }
+    @keyframes growX {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    @keyframes softPulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bar-reveal, .dot-pulse { animation: none !important; }
+    }
+  </style>
+
+  <g clip-path="url(#cardBgClip)">
+    <rect x="0" y="0" width="880" height="180" rx="14" fill="#0E1119"/>
+
+    <!-- Header -->
+    <text x="28" y="34" class="sans" font-size="16" font-weight="700" fill="#F8FAFC">Repository Language Distribution</text>
+    <text x="852" y="34" text-anchor="end" class="mono" font-size="11.5" fill="#94A3B8">44,945 tracked lines (excl. lock &amp; assets)</text>
+
+    <!-- Track background -->
+    <rect x="28" y="64" width="824" height="18" rx="9" fill="#1E2536"/>
+
+    <!-- Segmented bar (width = 824px total):
+         JS/JSX/MJS: 86.98% -> 716.7px
+         Markdown:   7.38%  -> 60.8px
+         SQL:        4.30%  -> 35.4px
+         CSS:        1.23%  -> 10.1px
+         Config:     0.11%  -> 1.0px (shown min 3px clipped at right edge)
+    -->
+    <g clip-path="url(#barClip)" class="bar-reveal">
+      <rect x="28"    y="64" width="717" height="18" fill="#F7DF1E"/>
+      <rect x="745"   y="64" width="61"  height="18" fill="#38BDF8"/>
+      <rect x="806"   y="64" width="35"  height="18" fill="#3ECF8E"/>
+      <rect x="841"   y="64" width="9"   height="18" fill="#A855F7"/>
+      <rect x="850"   y="64" width="4"   height="18" fill="#94A3B8"/>
+    </g>
+
+    <!-- Legend Row 1 -->
+    <g transform="translate(28, 108)">
+      <circle cx="6" cy="6" r="5" fill="#F7DF1E" class="dot-pulse"/>
+      <text x="18" y="10" class="sans" font-size="13" font-weight="700" fill="#F8FAFC">JavaScript &amp; React (.jsx / .js / .mjs)</text>
+      <text x="18" y="27" class="mono" font-size="11" fill="#94A3B8">86.98% • 39,094 lines</text>
+
+      <circle cx="320" cy="6" r="5" fill="#38BDF8" class="dot-pulse"/>
+      <text x="332" y="10" class="sans" font-size="13" font-weight="700" fill="#F8FAFC">Markdown (.md)</text>
+      <text x="332" y="27" class="mono" font-size="11" fill="#94A3B8">7.38% • 3,315 lines</text>
+
+      <circle cx="512" cy="6" r="5" fill="#3ECF8E" class="dot-pulse"/>
+      <text x="524" y="10" class="sans" font-size="13" font-weight="700" fill="#F8FAFC">SQL (.sql)</text>
+      <text x="524" y="27" class="mono" font-size="11" fill="#94A3B8">4.30% • 1,932 lines</text>
+
+      <circle cx="688" cy="6" r="5" fill="#A855F7" class="dot-pulse"/>
+      <text x="700" y="10" class="sans" font-size="13" font-weight="700" fill="#F8FAFC">CSS (.css)</text>
+      <text x="700" y="27" class="mono" font-size="11" fill="#94A3B8">1.23% • 555 lines</text>
+    </g>
+
+    <!-- Small config note -->
+    <g transform="translate(28, 152)">
+      <circle cx="6" cy="5" r="4" fill="#94A3B8"/>
+      <text x="18" y="9" class="mono" font-size="10.5" fill="#94A3B8">JSON &amp; Config (.json / .gitignore / .env.example): 0.11% (49 lines)</text>
+    </g>
+
+    <rect x="1" y="1" width="878" height="178" rx="13" fill="none" stroke="#283146" stroke-width="1.5"/>
+  </g>
+</svg>
