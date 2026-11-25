@@ -1,61 +1,68 @@
 import { NextResponse } from 'next/server';
-import { getAuthContext, apiError } from '@/lib/drives/authHelper';
-import { supabase } from '@/lib/supabaseClient';
+import { getNotifications, createNotification } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/notifications
- * Cursor-paginated notifications list, newest first.
- * Query: cursor (ISO timestamp), limit (default 20)
+ * GET: Fetch real-time student notifications.
+ * Accessible to student app and admin portal.
  */
 export async function GET(req) {
   try {
-    const auth = await getAuthContext(req);
-    if (!auth.user && !auth.studentId) {
-      return apiError('UNAUTHENTICATED', 'Authentication required');
-    }
-
     const { searchParams } = new URL(req.url);
-    const cursor = searchParams.get('cursor');
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
-    const studentId = auth.studentId || auth.user?.id;
+    const filters = {
+      type: searchParams.get('type') || 'all',
+      q: searchParams.get('q') || '',
+    };
 
-    let query = supabase
-      .from('notifications')
-      .select('*')
-      .eq('student_id', studentId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (cursor) {
-      query = query.lt('created_at', cursor);
-    }
-
-    const { data: notifications, error } = await query;
-
-    if (error) {
-      console.error('[GET /api/notifications] DB error:', error);
-      // Fallback: return empty list if table doesn't exist yet
-      return NextResponse.json({
-        success: true,
-        data: [],
-        nextCursor: null,
-      });
-    }
-
-    const nextCursor =
-      notifications && notifications.length === limit
-        ? notifications[notifications.length - 1].created_at
-        : null;
+    const notifications = await getNotifications(filters);
 
     return NextResponse.json({
       success: true,
-      data: notifications || [],
-      nextCursor,
+      count: notifications.length,
+      notifications,
     });
   } catch (err) {
     console.error('[GET /api/notifications] Error:', err);
-    return NextResponse.json({ success: true, data: [], nextCursor: null });
+    return NextResponse.json(
+      { error: 'Failed to retrieve notifications', details: err.message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST: Publish a new institutional notification (internship, drive, announcement).
+ */
+export async function POST(req) {
+  try {
+    const body = await req.json();
+
+    if (!body.title || !body.message) {
+      return NextResponse.json(
+        { error: 'Notification title and message are required' },
+        { status: 400 }
+      );
+    }
+
+    const created = await createNotification(body);
+
+    // NOTE: FCM push is now dispatched automatically inside createNotification()
+    // via the unified dispatch system. No separate FCM call needed here.
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Notification published successfully',
+        notification: created,
+      },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.error('[POST /api/notifications] Error:', err);
+    return NextResponse.json(
+      { error: 'Failed to publish notification', details: err.message },
+      { status: 500 }
+    );
   }
 }
