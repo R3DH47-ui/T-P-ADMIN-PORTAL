@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="100%" role="img" aria-labelledby="sd-title sd-desc">
+  <title id="sd-title">T-P-ADMIN-PORTAL Layered System Design</title>
+  <desc id="sd-desc">Five-layer system design from Client through Application, Service, Data, and External Services, highlighting Authentication, Access Control, Database Row Security boundaries, and the 6-step recruitment lifecycle flow.</desc>
+
+  <defs>
+    <linearGradient id="sdBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0E1119"/>
+      <stop offset="100%" stop-color="#141824"/>
+    </linearGradient>
+    <marker id="sdArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#E7B94A"/>
+    </marker>
+    <clipPath id="sdClip">
+      <rect x="0" y="0" width="1200" height="620" rx="18" ry="18"/>
+    </clipPath>
+  </defs>
+
+  <style>
+    .sans { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .step-line {
+      stroke-dasharray: 6 5;
+      animation: stepFlow 3s linear infinite;
+    }
+    .guard-pulse {
+      animation: guardGlow 4s ease-in-out infinite;
+    }
+    @keyframes stepFlow {
+      to { stroke-dashoffset: -22; }
+    }
+    @keyframes guardGlow {
+      0%, 100% { stroke-opacity: 0.55; }
+      50% { stroke-opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .step-line, .guard-pulse { animation: none !important; }
+    }
+  </style>
+
+  <g clip-path="url(#sdClip)">
+    <rect x="0" y="0" width="1200" height="620" rx="18" fill="url(#sdBg)"/>
+
+    <!-- Header -->
+    <text x="36" y="40" class="sans" font-size="20" font-weight="800" fill="#F8FAFC">Layered System Design &amp; Security Boundaries</text>
+    <text x="36" y="60" class="mono" font-size="11.5" fill="#94A3B8">5-Tier Architecture • Numbered Drive-to-Export Flow (1-6) • Auth / Access / Row Security</text>
+
+    <!-- Security Legend Badges -->
+    <g transform="translate(730, 22)">
+      <rect x="0" y="0" width="434" height="36" rx="10" fill="#191F2E" stroke="#334155" stroke-width="1"/>
+      <rect x="12" y="8" width="62" height="20" rx="5" fill="#8B1D2C"/>
+      <text x="43" y="21.5" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#FFFFFF">AUTH</text>
+      <rect x="84" y="8" width="62" height="20" rx="5" fill="#3E6FD9"/>
+      <text x="115" y="21.5" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#FFFFFF">ACCESS</text>
+      <rect x="156" y="8" width="58" height="20" rx="5" fill="#1E9E5A"/>
+      <text x="185" y="21.5" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#FFFFFF">DB SEC</text>
+      <text x="226" y="21.5" class="mono" font-size="10.5" fill="#E7B94A">1-6 Primary Lifecycle Flow</text>
+    </g>
+
+    <!-- LAYER 1: CLIENT LAYER -->
+    <g transform="translate(32, 80)">
+      <rect x="0" y="0" width="846" height="84" rx="12" fill="#151C2C" stroke="#2D3954" stroke-width="1.2"/>
+      <text x="16" y="22" class="mono" font-size="10.5" font-weight="700" fill="#93C5FD">LAYER 1 // CLIENT LAYER (WEB &amp; EXPO COMPANION)</text>
+
+      <rect x="16" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="28" y="49" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Admin Portal</text>
+      <text x="28" y="64" class="mono" font-size="10" fill="#94A3B8">9 Views • Session Loader</text>
+
+      <rect x="224" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="236" y="49" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Corporate Workspace</text>
+      <text x="236" y="64" class="mono" font-size="10" fill="#94A3B8">Talent Pool + Benchmarks</text>
+
+      <rect x="432" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="444" y="49" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Public Registration</text>
+      <text x="444" y="64" class="mono" font-size="10" fill="#94A3B8">SSR Forms + Validation</text>
+
+      <rect x="640" y="32" width="190" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="652" y="49" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Mobile Companion</text>
+      <text x="652" y="64" class="mono" font-size="10" fill="#94A3B8">7 Mobile Screens + Push</text>
+    </g>
+
+    <!-- AUTH GATE BANNER BETWEEN LAYER 1 & 2 -->
+    <g transform="translate(32, 174)">
+      <rect x="0" y="0" width="846" height="28" rx="7" fill="#2A121B" stroke="#E11D48" stroke-width="1.2" class="guard-pulse"/>
+      <rect x="10" y="5" width="54" height="18" rx="4" fill="#8B1D2C"/>
+      <text x="37" y="17.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#FFFFFF">AUTH</text>
+      <text x="76" y="18" class="mono" font-size="10.5" fill="#FECDD3">Client Session Gate + Secure Session Handling &amp; Token Verification</text>
+    </g>
+
+    <!-- LAYER 2: APPLICATION LAYER -->
+    <g transform="translate(32, 212)">
+      <rect x="0" y="0" width="846" height="84" rx="12" fill="#151C2C" stroke="#2D3954" stroke-width="1.2"/>
+      <text x="16" y="22" class="mono" font-size="10.5" font-weight="700" fill="#FFDF9B">LAYER 2 // APPLICATION LAYER (NEXT.JS 16 SERVER &amp; ROUTE HANDLERS)</text>
+
+      <rect x="16" y="32" width="260" height="40" rx="8" fill="#1E273D" stroke="#3E6FD9" stroke-width="1.2"/>
+      <text x="28" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Role-Based Access Control</text>
+      <text x="28" y="64" class="mono" font-size="9.5" fill="#93C5FD">Staff, Partner &amp; Student Guards</text>
+
+      <rect x="290" y="32" width="266" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="302" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Drive &amp; Registration Handlers</text>
+      <text x="302" y="64" class="mono" font-size="9.5" fill="#94A3B8">Creation, Publish &amp; Submissions</text>
+
+      <rect x="570" y="32" width="260" height="40" rx="8" fill="#1E273D" stroke="#3B496B" stroke-width="1"/>
+      <text x="582" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Stats, Onboarding &amp; Exports</text>
+      <text x="582" y="64" class="mono" font-size="9.5" fill="#94A3B8">Approvals, Metrics &amp; CSV Reports</text>
+    </g>
+
+    <!-- ACCESS BOUNDARY STRIP -->
+    <g transform="translate(32, 306)">
+      <rect x="0" y="0" width="846" height="28" rx="7" fill="#121E36" stroke="#3E6FD9" stroke-width="1.2" class="guard-pulse"/>
+      <rect x="10" y="5" width="54" height="18" rx="4" fill="#3E6FD9"/>
+      <text x="37" y="17.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#FFFFFF">ACCESS</text>
+      <text x="76" y="18" class="mono" font-size="10.5" fill="#BFDBFE">Role Enforcement &amp; Continuous Account Status Verification Across Active Sessions</text>
+    </g>
+
+    <!-- LAYER 3: SERVICE / DOMAIN LAYER -->
+    <g transform="translate(32, 344)">
+      <rect x="0" y="0" width="846" height="84" rx="12" fill="#151C2C" stroke="#2D3954" stroke-width="1.2"/>
+      <text x="16" y="22" class="mono" font-size="10.5" font-weight="700" fill="#C4B5FD">LAYER 3 // SERVICE &amp; DOMAIN LAYER</text>
+
+      <rect x="16" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#475569" stroke-width="1"/>
+      <text x="28" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Schema Engine</text>
+      <text x="28" y="64" class="mono" font-size="9.5" fill="#94A3B8">Validation &amp; Compatibility Lock</text>
+
+      <rect x="224" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#475569" stroke-width="1"/>
+      <text x="236" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Unified Data Adapter</text>
+      <text x="236" y="64" class="mono" font-size="9.5" fill="#94A3B8">Memory Cache + Database Sync</text>
+
+      <rect x="432" y="32" width="194" height="40" rx="8" fill="#1E273D" stroke="#475569" stroke-width="1"/>
+      <text x="444" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Notification Dedupe</text>
+      <text x="444" y="64" class="mono" font-size="9.5" fill="#94A3B8">Idempotent Dispatch Guard</text>
+
+      <rect x="640" y="32" width="190" height="40" rx="8" fill="#1E273D" stroke="#475569" stroke-width="1"/>
+      <text x="652" y="49" class="sans" font-size="12" font-weight="700" fill="#FFFFFF">Stats &amp; Safe CSV</text>
+      <text x="652" y="64" class="mono" font-size="9.5" fill="#94A3B8">Aggregations &amp; Export Helpers</text>
+    </g>
+
+    <!-- DB SEC BOUNDARY STRIP -->
+    <g transform="translate(32, 438)">
+      <rect x="0" y="0" width="846" height="28" rx="7" fill="#0F261F" stroke="#1E9E5A" stroke-width="1.2" class="guard-pulse"/>
+      <rect x="10" y="5" width="54" height="18" rx="4" fill="#1E9E5A"/>
+      <text x="37" y="17.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#FFFFFF">DB SEC</text>
+      <text x="76" y="18" class="mono" font-size="10.5" fill="#A7F3D0">Database-Level Row Security &amp; Server-Only Privileged Mutations</text>
+    </g>
+
+    <!-- LAYER 4: DATA LAYER -->
+    <g transform="translate(32, 476)">
+      <rect x="0" y="0" width="440" height="114" rx="12" fill="#11221D" stroke="#1E9E5A" stroke-width="1.2"/>
+      <text x="16" y="24" class="mono" font-size="10.5" font-weight="700" fill="#6EE7B7">LAYER 4 // DATA &amp; REALTIME (SUPABASE)</text>
+      <text x="16" y="46" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">PostgreSQL + Supabase Realtime</text>
+      <text x="16" y="64" class="mono" font-size="10" fill="#CBD5E1">Student data, admin records, drive &amp; event data,</text>
+      <text x="16" y="80" class="mono" font-size="10" fill="#CBD5E1">registrations, notifications, audit log</text>
+      <text x="16" y="98" class="mono" font-size="10" fill="#6EE7B7">Database triggers &amp; stored procedures</text>
+    </g>
+
+    <!-- LAYER 5: EXTERNAL SERVICES -->
+    <g transform="translate(492, 476)">
+      <rect x="0" y="0" width="386" height="114" rx="12" fill="#1B1928" stroke="#FBBF24" stroke-width="1.2"/>
+      <text x="16" y="24" class="mono" font-size="10.5" font-weight="700" fill="#FDE68A">LAYER 5 // EXTERNAL CLOUD SERVICES</text>
+      <text x="16" y="48" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Firebase Cloud Messaging (HTTP v1)</text>
+      <text x="16" y="65" class="mono" font-size="10" fill="#CBD5E1">Service-account push delivery to mobile devices</text>
+      <text x="16" y="86" class="sans" font-size="12.5" font-weight="700" fill="#FFFFFF">Cloudinary Media Service</text>
+      <text x="16" y="102" class="mono" font-size="10" fill="#CBD5E1">Signed media uploads &amp; corporate logo hosting</text>
+    </g>
+
+    <!-- RIGHT SIDEBAR: NUMBERED 6-STEP PRIMARY FLOW -->
+    <g transform="translate(902, 80)">
+      <rect x="0" y="0" width="266" height="510" rx="14" fill="#141927" stroke="#E7B94A" stroke-opacity="0.45" stroke-width="1.3"/>
+      <text x="18" y="28" class="mono" font-size="11" font-weight="700" fill="#FFDF9B">PRIMARY LIFECYCLE FLOW</text>
+      <line x1="18" y1="40" x2="248" y2="40" stroke="#283148" stroke-width="1"/>
+
+      <line x1="34" y1="68" x2="34" y2="452" stroke="#E7B94A" stroke-width="2" class="step-line"/>
+      <circle r="4" fill="#FFDF9B">
+        <animateMotion dur="5s" repeatCount="indefinite" path="M 34 68 L 34 452"/>
+      </circle>
+
+      <!-- Step 1 -->
+      <circle cx="34" cy="74" r="14" fill="#8B1D2C" stroke="#E7B94A" stroke-width="1.5"/>
+      <text x="34" y="79" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">1</text>
+      <text x="60" y="71" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Drive Creation</text>
+      <text x="60" y="88" class="mono" font-size="10" fill="#94A3B8">Drive &amp; event configuration</text>
+      <text x="60" y="102" class="mono" font-size="9.5" fill="#CBD5E1">Custom form fields &amp; cutoff</text>
+
+      <!-- Step 2 -->
+      <circle cx="34" cy="148" r="14" fill="#8B1D2C" stroke="#E7B94A" stroke-width="1.5"/>
+      <text x="34" y="153" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">2</text>
+      <text x="60" y="145" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Publish &amp; Lock Schema</text>
+      <text x="60" y="162" class="mono" font-size="10" fill="#94A3B8">Publish &amp; compatibility lock</text>
+      <text x="60" y="176" class="mono" font-size="9.5" fill="#CBD5E1">Public link &amp; schema check</text>
+
+      <!-- Step 3 -->
+      <circle cx="34" cy="222" r="14" fill="#3E6FD9" stroke="#93C5FD" stroke-width="1.5"/>
+      <text x="34" y="227" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">3</text>
+      <text x="60" y="219" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Student Registration</text>
+      <text x="60" y="236" class="mono" font-size="10" fill="#94A3B8">Web &amp; mobile form submit</text>
+      <text x="60" y="250" class="mono" font-size="9.5" fill="#CBD5E1">Payload cap + duplicate guard</text>
+
+      <!-- Step 4 -->
+      <circle cx="34" cy="296" r="14" fill="#1E9E5A" stroke="#6EE7B7" stroke-width="1.5"/>
+      <text x="34" y="301" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">4</text>
+      <text x="60" y="293" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Realtime Roster Sync</text>
+      <text x="60" y="310" class="mono" font-size="10" fill="#94A3B8">Managed Realtime stream</text>
+      <text x="60" y="324" class="mono" font-size="9.5" fill="#CBD5E1">Instant registrant list updates</text>
+
+      <!-- Step 5 -->
+      <circle cx="34" cy="370" r="14" fill="#B45309" stroke="#FDE68A" stroke-width="1.5"/>
+      <text x="34" y="375" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">5</text>
+      <text x="60" y="367" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Push Notification</text>
+      <text x="60" y="384" class="mono" font-size="10" fill="#94A3B8">Dedupe -&gt; FCM HTTP v1</text>
+      <text x="60" y="398" class="mono" font-size="9.5" fill="#CBD5E1">Single-dispatch guarantee</text>
+
+      <!-- Step 6 -->
+      <circle cx="34" cy="444" r="14" fill="#6D28D9" stroke="#C4B5FD" stroke-width="1.5"/>
+      <text x="34" y="449" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="#FFFFFF">6</text>
+      <text x="60" y="441" class="sans" font-size="13" font-weight="700" fill="#FFFFFF">Analytics &amp; Export</text>
+      <text x="60" y="458" class="mono" font-size="10" fill="#94A3B8">Stats aggregation &amp; CSV</text>
+      <text x="60" y="472" class="mono" font-size="9.5" fill="#CBD5E1">Safe CSV + Audit Log</text>
+    </g>
+
+    <!-- Outer frame -->
+    <rect x="1" y="1" width="1198" height="618" rx="17" fill="none" stroke="#283146" stroke-width="1.5"/>
+  </g>
+</svg>
