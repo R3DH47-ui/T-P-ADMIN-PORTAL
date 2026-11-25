@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" role="img" aria-labelledby="banner-title banner-desc">
+  <title id="banner-title">RIMT Academic Trust — Training &amp; Placement Admin Portal</title>
+  <desc id="banner-desc">Hero banner showcasing the Training &amp; Placement Administration Portal stack: Next.js 16, React 18, Tailwind CSS, Supabase Realtime, and Expo Companion.</desc>
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0E1018"/>
+      <stop offset="50%" stop-color="#171422"/>
+      <stop offset="100%" stop-color="#1F0D15"/>
+    </linearGradient>
+
+    <radialGradient id="maroonGlow" cx="22%" cy="32%" r="55%">
+      <stop offset="0%" stop-color="#8B1D2C" stop-opacity="0.52"/>
+      <stop offset="60%" stop-color="#8B1D2C" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#8B1D2C" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="goldGlow" cx="84%" cy="72%" r="45%">
+      <stop offset="0%" stop-color="#E7B94A" stop-opacity="0.22"/>
+      <stop offset="55%" stop-color="#3E6FD9" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#0E1018" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="accentBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B1D2C"/>
+      <stop offset="50%" stop-color="#E7B94A"/>
+      <stop offset="100%" stop-color="#3E6FD9"/>
+    </linearGradient>
+
+    <linearGradient id="shimmerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <pattern id="gridPattern" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#FFFFFF" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+
+    <clipPath id="cardClip">
+      <rect x="0" y="0" width="1200" height="320" rx="18" ry="18"/>
+    </clipPath>
+  </defs>
+
+  <style>
+    .font-sans {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .float-slow {
+      animation: floatY 6s ease-in-out infinite;
+    }
+    .float-alt {
+      animation: floatYAlt 7.5s ease-in-out infinite;
+    }
+    .pulse-ring {
+      animation: pulseOp 4.5s ease-in-out infinite;
+    }
+    .shimmer {
+      animation: sweepX 7s ease-in-out infinite;
+    }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+    @keyframes floatYAlt {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(6px); }
+    }
+    @keyframes pulseOp {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.95; }
+    }
+    @keyframes sweepX {
+      0% { transform: translateX(-350px); }
+      60%, 100% { transform: translateX(1300px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .float-slow, .float-alt, .pulse-ring, .shimmer {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <g clip-path="url(#cardClip)">
+    <!-- Opaque dark card background so it stays legible on GitHub light & dark modes -->
+    <rect x="0" y="0" width="1200" height="320" rx="18" fill="url(#bgGrad)"/>
+    <rect x="0" y="0" width="1200" height="320" fill="url(#gridPattern)"/>
+    <rect x="0" y="0" width="1200" height="320" fill="url(#maroonGlow)"/>
+    <rect x="0" y="0" width="1200" height="320" fill="url(#goldGlow)"/>
+
+    <!-- Subtle top accent bar -->
+    <rect x="0" y="0" width="1200" height="4" fill="url(#accentBar)"/>
+
+    <!-- Subtle sweep sheen -->
+    <polygon points="0,0 140,0 60,320 -80,320" fill="url(#shimmerGrad)" class="shimmer"/>
+
+    <!-- Decorative right telemetry cluster -->
+    <g class="float-slow" transform="translate(888, 42)">
+      <rect x="0" y="0" width="268" height="236" rx="14" fill="#141824" fill-opacity="0.88" stroke="#2D3348" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="4.5" fill="#E11D48"/>
+      <circle cx="35" cy="20" r="4.5" fill="#E7B94A"/>
+      <circle cx="50" cy="20" r="4.5" fill="#1E9E5A"/>
+      <text x="68" y="24" class="font-mono" font-size="11" fill="#94A3B8">tp-portal :: live-pipeline</text>
+      <line x1="14" y1="36" x2="254" y2="36" stroke="#23283B" stroke-width="1"/>
+
+      <!-- Animated Telemetry Rows -->
+      <rect x="16" y="50" width="236" height="38" rx="8" fill="#1B2132" stroke="#2A3147" stroke-width="1"/>
+      <circle cx="32" cy="69" r="5" fill="#1E9E5A" class="pulse-ring"/>
+      <text x="46" y="65" class="font-mono" font-size="11" font-weight="700" fill="#E2E8F0">SUPABASE REALTIME</text>
+      <text x="46" y="80" class="font-mono" font-size="10" fill="#64748B">13+ tables synced • REPLICA FULL</text>
+
+      <rect x="16" y="98" width="236" height="38" rx="8" fill="#1B2132" stroke="#2A3147" stroke-width="1"/>
+      <circle cx="32" cy="117" r="5" fill="#E7B94A" class="pulse-ring"/>
+      <text x="46" y="113" class="font-mono" font-size="11" font-weight="700" fill="#E2E8F0">RBAC + STATUS GUARD</text>
+      <text x="46" y="128" class="font-mono" font-size="10" fill="#64748B">ADMIN • COMPANY • SCHOLAR</text>
+
+      <rect x="16" y="146" width="236" height="38" rx="8" fill="#1B2132" stroke="#2A3147" stroke-width="1"/>
+      <circle cx="32" cy="165" r="5" fill="#3E6FD9" class="pulse-ring"/>
+      <text x="46" y="161" class="font-mono" font-size="11" font-weight="700" fill="#E2E8F0">FCM HTTP v1 DEDUPE</text>
+      <text x="46" y="176" class="font-mono" font-size="10" fill="#64748B">Idempotent 20s dispatch guard</text>
+
+      <!-- Bottom progress bar inside telemetry card -->
+      <text x="16" y="208" class="font-mono" font-size="10" fill="#94A3B8">ESM VERIFICATION SUITE</text>
+      <text x="250" y="208" text-anchor="end" class="font-mono" font-size="10" font-weight="700" fill="#34D399">8 SUITES</text>
+      <rect x="16" y="216" width="236" height="6" rx="3" fill="#23293D"/>
+      <rect x="16" y="216" width="236" height="6" rx="3" fill="url(#accentBar)">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="4s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- Floating ambient nodes -->
+    <circle cx="848" cy="70" r="3" fill="#E7B94A" opacity="0.65" class="float-alt"/>
+    <circle cx="865" cy="252" r="2.5" fill="#3E6FD9" opacity="0.7" class="float-slow"/>
+
+    <!-- Eyebrow Pill -->
+    <g transform="translate(48, 46)">
+      <rect x="0" y="0" width="292" height="28" rx="14" fill="#8B1D2C" fill-opacity="0.28" stroke="#E7B94A" stroke-opacity="0.45" stroke-width="1"/>
+      <circle cx="16" cy="14" r="4" fill="#E7B94A">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <text x="29" y="18" class="font-mono" font-size="11" font-weight="700" letter-spacing="0.8" fill="#FFDF9B">INSTITUTIONAL PLACEMENT OPS</text>
+    </g>
+
+    <!-- Main Heading -->
+    <text x="48" y="120" class="font-sans" font-size="36" font-weight="800" letter-spacing="-0.6" fill="#FFFFFF">
+      RIMT Academic Trust
+    </text>
+    <text x="48" y="162" class="font-sans" font-size="31" font-weight="700" letter-spacing="-0.4" fill="#FFDF9B">
+      Training &amp; Placement Admin Portal
+    </text>
+
+    <!-- Subtitle / Tagline -->
+    <text x="48" y="198" class="font-sans" font-size="15.5" fill="#CBD5E1">
+      End-to-end campus drive orchestration, gated student dossiers, corporate partner portals,
+    </text>
+    <text x="48" y="220" class="font-sans" font-size="15.5" fill="#94A3B8">
+      live Realtime registrant rosters, and deduplicated FCM dispatch for mobile &amp; web.
+    </text>
+
+    <!-- Tech Stack Chips -->
+    <g transform="translate(48, 250)">
+      <rect x="0" y="0" width="114" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="15" cy="15" r="4" fill="#FFFFFF"/>
+      <text x="26" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">Next.js 16</text>
+
+      <rect x="124" y="0" width="98" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="139" cy="15" r="4" fill="#38BDF8"/>
+      <text x="150" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">React 18</text>
+
+      <rect x="232" y="0" width="124" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="247" cy="15" r="4" fill="#22D3EE"/>
+      <text x="258" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">Tailwind CSS</text>
+
+      <rect x="366" y="0" width="108" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="381" cy="15" r="4" fill="#3ECF8E"/>
+      <text x="392" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">Supabase</text>
+
+      <rect x="484" y="0" width="104" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="499" cy="15" r="4" fill="#F59E0B"/>
+      <text x="510" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">Realtime</text>
+
+      <rect x="598" y="0" width="144" height="30" rx="8" fill="#1C2233" stroke="#334155" stroke-width="1"/>
+      <circle cx="613" cy="15" r="4" fill="#A855F7"/>
+      <text x="624" y="19" class="font-mono" font-size="12" font-weight="600" fill="#F8FAFC">Expo Companion</text>
+    </g>
+
+    <!-- Outer subtle border -->
+    <rect x="1" y="1" width="1198" height="318" rx="17" fill="none" stroke="#2D3348" stroke-width="1.5"/>
+  </g>
+</svg>
